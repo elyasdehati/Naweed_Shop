@@ -14,6 +14,18 @@
                             </div>
                         </div>
 
+                         {{-- Server-side validation errors --}}
+                        @if ($errors->any())
+                            <div class="alert alert-danger alert-dismissible fade show text-center" role="alert">
+                                <ul class="mb-0">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        @endif
+
                         <!-- Form Validation -->
                         <div class="row">
                             <div class="col-xl-12">
@@ -51,7 +63,7 @@
                 </div>
 
                 <div class="col-12">
-                    <button class="btn btn-primary" type="submit">Save Change</button>
+                    <button class="btn btn-primary" type="submit">ذخیره</button>
                 </div>
             </form>
         </div> <!-- end card-body -->
@@ -63,48 +75,5 @@
                     </div> <!-- container-fluid -->
 
                 </div>
-
-                <script type="text/javascript">
-    $(document).ready(function (){
-        $('#myForm').validate({
-            rules: {
-                name: {
-                    required : true,
-                }, 
-                email: {
-                    required : true,
-                },
-                address: {
-                    required : true,
-                },
-                
-            },
-            messages :{
-                name: {
-                    required : 'Please Enter Customer Name',
-                }, 
-                name: {
-                    required : 'Please Enter Customer Email',
-                },
-                name: {
-                    required : 'Please Enter Customer Address',
-                },
-
-            },
-            errorElement : 'span', 
-            errorPlacement: function (error,element) {
-                error.addClass('invalid-feedback');
-                element.closest('.form-group').append(error);
-            },
-            highlight : function(element, errorClass, validClass){
-                $(element).addClass('is-invalid');
-            },
-            unhighlight : function(element, errorClass, validClass){
-                $(element).removeClass('is-invalid');
-            },
-        });
-    });
-    
-</script>
 
 @endsection

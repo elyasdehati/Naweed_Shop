@@ -10,11 +10,11 @@
 
                         <div class="py-3 d-flex align-items-sm-center flex-sm-row flex-column">
                             <div class="flex-grow-1">
-                                <h4 class="fs-18 fw-semibold m-0">اضافه کردن کاربر</h4>
+                                <h4 class="fs-18 fw-semibold m-0">ویرایش دسته بندی ها</h4>
                             </div>
                         </div>
 
-                        {{-- Server-side validation errors --}}
+                        {{-- Server-side error alert with close button --}}
                         @if ($errors->any())
                             <div class="alert alert-danger alert-dismissible fade show text-center" role="alert">
                                 <ul class="mb-0">
@@ -33,37 +33,17 @@
                                     <div class="card-header">
                                     </div><!-- end card header -->
         
-        <div class="card-body">
-            <form action="{{ route('update.employee') }}" method="post" class="row g-3" id="myForm" enctype="multipart/form-data">
+        <div class="card-body d-flex justify-content-center">
+            <form action="{{ route('update.category') }}" method="post" class="row g-3" id="myForm" enctype="multipart/form-data">
                 @csrf
 
-                <div class="form-group col-md-4">
-                    <input type="hidden" name="id" value="{{ $employee->id }}">
-                    <label for="name" class="form-label">نام کارمند</label>
-                    <input type="text" class="form-control" name="name" value="{{ $employee->name }}">
+                <div class="form-group col-md-12 text-center">
+                    <input type="hidden" name="id" value="{{ $category->id }}">
+                    <label for="name" class="form-label">نام دسته بندی محصول</label>
+                    <input type="text" class="form-control mx-auto" name="name" value="{{ $category->name }}">
                 </div>
 
-                <div class="form-group col-md-4">
-                    <label for="lname" class="form-label">تخلص </label>
-                    <input type="text" class="form-control" name="lname" value="{{ $employee->lname }}">
-                </div>
-
-                <div class="form-group col-md-4">
-                    <label for="province" class="form-label">ولایت</label>
-                    <input type="text" class="form-control" name="province" value="{{ $employee->province }}">
-                </div>
-
-                <div class="form-group col-md-4">
-                    <label for="email" class="form-label">ایمیل</label>
-                    <input type="text" class="form-control" name="email" value="{{ $employee->email }}">
-                </div>
-
-                <div class="col-md-4">
-                    <label for="phone" class="form-label">شماره تماس</label>
-                    <input type="text" class="form-control" name="phone" value="{{ $employee->phone }}">
-                </div>
-
-                <div class="col-12">
+                <div class="col-12 text-center">
                     <button class="btn btn-primary" type="submit">ذخیره</button>
                 </div>
             </form>

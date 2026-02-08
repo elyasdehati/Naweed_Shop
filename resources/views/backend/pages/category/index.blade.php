@@ -8,7 +8,7 @@
 
                         <div class="py-3 d-flex align-items-sm-center flex-sm-row flex-column">
                             <div class="flex-grow-1">
-                                <h4 class="fs-18 fw-semibold m-0">کارمندان</h4>
+                                <h4 class="fs-18 fw-semibold m-0">دسته بندی ها</h4>
                             </div>
             
                             {{-- <div class="text-end">
@@ -32,26 +32,18 @@
                     <thead>
                     <tr>
                         <th class="text-center">#</th>
-                        <th class="text-center">نام</th>
-                        <th class="text-center">تخلص</th>
-                        <th class="text-center">ولایت</th>
-                        <th class="text-center">ایمیل</th>
-                        <th class="text-center">شماره تماس</th>
+                        <th class="text-center">نام دسته بندی</th>
                         <th class="text-center">عملیات</th>
                     </tr>
                     </thead>
                     <tbody>
-                        @foreach ($employee as $key=> $item)
+                        @foreach ($category as $key=> $item)
                             <tr>
                                 <td class="text-center">{{ $key+1 }}</td>
                                 <td class="text-center">{{ $item->name }}</td>
-                                <td class="text-center">{{ $item->lname }}</td>
-                                <td class="text-center">{{ $item->province }}</td>
-                                <td class="text-center">{{ $item->email }}</td>
-                                <td class="text-center">{{ $item->phone }}</td>
-                                <td>
-                                    <a href="{{ route('edit.employee', $item->id) }}" class="btn btn-success btn-sm">ویرایش</a>
-                                    <a href="{{ route('delete.employee', $item->id) }}" id="delete" class="btn btn-danger btn-sm delete-confirm">حذف</a>
+                                <td class="text-center">
+                                    <a href="{{ route('edit.category', $item->id) }}" class="btn btn-success btn-sm">ویرایش</a>
+                                    <a href="{{ route('delete.category', $item->id) }}" id="delete" class="btn btn-danger btn-sm delete-confirm">حذف</a>
                                 </td>
                             </tr>
                         @endforeach
