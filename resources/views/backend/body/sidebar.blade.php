@@ -74,7 +74,7 @@
 
                 <li>
                     <a href="#category" data-bs-toggle="collapse">
-                        <i data-feather="users"></i>
+                        <i data-feather="package"></i>
                         <span> دسته بندی محصولات </span>
                         <span class="menu-arrow"></span>
                     </a>
@@ -85,6 +85,24 @@
                             </li>
                             <li>
                                 <a href="{{ route('add.category') }}" class="tp-link">افزودن دسته بندی</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li>
+                    <a href="#product" data-bs-toggle="collapse">
+                        <i data-feather="users"></i>
+                        <span> محصولات </span>
+                        <span class="menu-arrow"></span>
+                    </a>
+                    <div class="collapse" id="product">
+                        <ul class="nav-second-level">
+                            <li>
+                                <a href="{{ route('all.products') }}" class="tp-link">لیست محصولات</a>
+                            </li>
+                            <li>
+                                <a href="{{ route('add.products') }}" class="tp-link">افزودن محصول</a>
                             </li>
                         </ul>
                     </div>

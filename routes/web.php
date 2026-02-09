@@ -5,7 +5,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
 
 Route::get('/dashboard', function () {
@@ -35,6 +35,16 @@ Route::middleware('auth')->group(function () {
         Route::get('/edit/category/{id}', 'EditCategory')->name('edit.category');
         Route::post('/update/category', 'UpdateCategory')->name('update.category');
         Route::get('/delete/category/{id}', 'DeleteCategory')->name('delete.category');
+    });
+
+    //  Products
+    Route::controller(BackendController::class)->group(function () {
+        Route::get('all/products', 'AllProducts')->name('all.products');
+        Route::get('add/products', 'AddProducts')->name('add.products');
+        Route::post('/store/products', 'StoreProducts')->name('store.products');
+        Route::get('/edit/products/{id}', 'EditProducts')->name('edit.products');
+        Route::post('/update/products/{id}','UpdateProducts')->name('update.products');
+        Route::get('/delete/products/{id}', 'DeleteProducts')->name('delete.products');
     });
 
 });

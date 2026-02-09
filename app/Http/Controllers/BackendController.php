@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Employee;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class BackendController extends Controller
@@ -159,6 +160,130 @@ class BackendController extends Controller
             'alert-type' => 'error'
         );
             return redirect()->back()->with($notification);
+    }
+
+    // --------------  Category -----------------
+
+    public function AllProducts(){
+        $product = Product::orderBy('id','desc')->get();
+        return view('backend.pages.products.index', compact('product'));
+    }
+
+    public function AddProducts(){
+        $categories = Category::all();
+        return view('backend.pages.products.add', compact('categories'));
+    }
+
+    public function StoreProducts(Request $request) {
+
+        // تبدیل اعداد فارسی به انگلیسی
+        $quantity = str_replace(
+            ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'],
+            ['0','1','2','3','4','5','6','7','8','9'],
+            $request->quantity
+        );
+
+        $price = str_replace(
+            ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'],
+            ['0','1','2','3','4','5','6','7','8','9'],
+            $request->price
+        );
+
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $filename = time().'.'.$file->getClientOriginalExtension();
+            $file->move(public_path('upload/products'), $filename);
+            $imagePath = 'upload/products/'.$filename;
+        } else {
+            $imagePath = null;
+        }
+
+        Product::create([
+            'category_id' => $request->category_id,
+            'name' => $request->name,
+            'quantity' => $quantity,
+            'code' => $request->code,
+            'price' => $price,
+            'note' => $request->note,
+            'image' => $imagePath,
+        ]);
+
+        $notification = array(
+            'message' => 'محصول اضافه شد',
+            'alert-type' => 'success'
+        );
+
+        return redirect()->route('all.products')->with($notification);
+    }
+
+    public function EditProducts($id){
+        $categories = Category::all();
+        $product = Product::find($id);
+        return view('backend.pages.products.edit', compact('product','categories'));
+    }
+    
+    public function UpdateProducts(Request $request, $id) {
+        $product = Product::findOrFail($id);
+
+        // تبدیل اعداد فارسی به انگلیسی
+        $quantity = str_replace(
+            ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'],
+            ['0','1','2','3','4','5','6','7','8','9'],
+            $request->quantity
+        );
+
+        $price = str_replace(
+            ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'],
+            ['0','1','2','3','4','5','6','7','8','9'],
+            $request->price
+        );
+
+        if ($request->hasFile('image')) {
+            if ($product->image && file_exists(public_path($product->image))) {
+                unlink(public_path($product->image));
+            }
+
+            $file = $request->file('image');
+            $filename = time().'.'.$file->getClientOriginalExtension();
+            $file->move(public_path('upload/products'), $filename);
+            $imagePath = 'upload/products/'.$filename;
+        } else {
+            $imagePath = $product->image;
+        }
+
+        $product->update([
+            'category_id' => $request->category_id,
+            'name' => $request->name,
+            'quantity' => $quantity,
+            'code' => $request->code,
+            'price' => $price,
+            'note' => $request->note,
+            'image' => $imagePath,
+        ]);
+
+        $notification = [
+            'message' => 'محصول با موفقیت بروزرسانی شد',
+            'alert-type' => 'success'
+        ];
+
+        return redirect()->route('all.products')->with($notification);
+    }
+
+    public function DeleteProducts($id) {
+        $product = Product::findOrFail($id);
+
+        if ($product->image && file_exists(public_path($product->image))) {
+            unlink(public_path($product->image));
+        }
+
+        $product->delete();
+
+        $notification = [
+            'message' => 'محصول با موفقیت حذف شد',
+            'alert-type' => 'error' 
+        ];
+
+        return redirect()->back()->with($notification);
     }
 
 }
