@@ -48,7 +48,16 @@
                                 <td class="text-center">{{ $key+1 }}</td>
                                 <td class="text-center">{{ $item->category ? $item->category->name : '-' }}</td>
                                 <td class="text-center">{{ $item->name }}</td>
-                                <td class="text-center">{{ $item->quantity }}</td>
+                                {{-- <td class="text-center">{{ $item->quantity }}</td> --}}
+                                <td class="text-center">
+                                    @if ($item->quantity <= 5)
+                                        <span class="badge text-bg-danger">{{ $item->quantity }}</span>
+                                        @else
+                                        <h4>
+                                            <span class="badge text-bg-secondary">{{ $item->quantity }}</span>
+                                        </h4>
+                                    @endif
+                                </td>
                                 <td class="text-center">{{ $item->price }}</td>
                                 <td class="text-center">{{ $item->code }}</td>
                                 <td class="text-center">{{ $item->note }}</td>

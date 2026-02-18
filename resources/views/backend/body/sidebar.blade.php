@@ -108,6 +108,24 @@
                     </div>
                 </li>
 
+                <li>
+                    <a href="#sales" data-bs-toggle="collapse">
+                        <i data-feather="users"></i>
+                        <span> فروشات </span>
+                        <span class="menu-arrow"></span>
+                    </a>
+                    <div class="collapse" id="sales">
+                        <ul class="nav-second-level">
+                            <li>
+                                <a href="{{ route('all.sales') }}" class="tp-link">لیست فروشات</a>
+                            </li>
+                            <li>
+                                <a href="{{ route('add.sales') }}" class="tp-link">افزودن فروشات</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+
             </ul>
 
         </div>

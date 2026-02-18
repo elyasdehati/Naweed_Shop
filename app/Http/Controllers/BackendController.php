@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Employee;
 use App\Models\Product;
+use App\Models\Sale;
 use Illuminate\Http\Request;
 
 class BackendController extends Controller
@@ -118,7 +119,7 @@ class BackendController extends Controller
             'name' => $request->name,
         ]);
 
-             $notification = array(
+            $notification = array(
             'message' => 'دسته بندی محصول اضافه شد',
             'alert-type' => 'success'
         );
@@ -162,7 +163,7 @@ class BackendController extends Controller
             return redirect()->back()->with($notification);
     }
 
-    // --------------  Category -----------------
+    // --------------  Products -----------------
 
     public function AllProducts(){
         $product = Product::orderBy('id','desc')->get();
@@ -286,4 +287,151 @@ class BackendController extends Controller
         return redirect()->back()->with($notification);
     }
 
+    // --------------  Sales -----------------
+
+    public function AllSales(){
+        $sale = Sale::orderBy('id','desc')->get();
+        return view('backend.pages.sales.index', compact('sale'));
+    }
+
+    public function AddSales(){
+        $employee = Employee::all();
+        $category = Category::all();
+        $product = Product::all();
+        return view('backend.pages.sales.add', compact('employee','category', 'product'));
+    }
+    
+    public function GetProducts($category_id){
+        $products = Product::where('category_id', $category_id)->get();
+        return response()->json($products);
+    }
+
+    public function StoreSales(Request $request){
+        $request->validate([
+            'category_id' => 'required',
+            'product_id' => 'required',
+            'employee_id' => 'required',
+            'quantity' => 'required|integer|min:1',
+            'sale_price' => 'required|numeric',
+            'province' => 'required'
+        ]);
+
+        $product = Product::findOrFail($request->product_id);
+
+        // چک کردن موجودی
+        if($product->quantity < $request->quantity){
+            return back()->withErrors('موجودی کافی نیست');
+        }
+
+        $buy_price = $product->price;
+        $charges = $request->charges ?? 0;
+        $total = ($request->sale_price * $request->quantity) - $charges;
+        $profit = ($request->sale_price - $buy_price) * $request->quantity - $charges;
+
+        Sale::create([
+            'category_id' => $request->category_id,
+            'product_id' => $request->product_id,
+            'employee_id' => $request->employee_id,
+            'quantity' => $request->quantity,
+            'buy_price' => $buy_price,
+            'sale_price' => $request->sale_price,
+            'charges' => $charges,
+            'province' => $request->province,
+            'profit' => $profit,
+            'total' => $total,
+        ]);
+
+        $product->quantity -= $request->quantity;
+        $product->save();
+
+        $notification = array(
+            'message' => 'فروش موفقانه اضافه شد',
+            'alert-type' => 'success'
+        );
+
+        return redirect()->route('all.sales')->with($notification);
+    }
+
+    public function EditSales($id){
+        $sale = Sale::findOrFail($id);
+        $category = Category::all();
+        $product = Product::all();
+        $employee = Employee::all();
+        return view('backend.pages.sales.edit', compact('sale','category','product','employee'));
+    }
+
+    public function UpdateSales(Request $request, $id){
+        $request->validate([
+            'category_id' => 'required',
+            'product_id' => 'required',
+            'employee_id' => 'required',
+            'quantity' => 'required|integer|min:1',
+            'sale_price' => 'required|numeric',
+            'province' => 'required'
+        ]);
+
+        $sale = Sale::findOrFail($id);
+        $product = Product::findOrFail($request->product_id);
+
+        // محاسبه تغییر مقدار
+        $oldQty = $sale->quantity;
+        $newQty = $request->quantity;
+        $difference = $newQty - $oldQty;
+
+        if($product->quantity < $difference){
+            return back()->withErrors('موجودی کافی نیست');
+        }
+
+        $buy_price = $product->price;
+        $charges = $request->charges ?? 0;
+        $total = ($request->sale_price * $request->quantity) - $charges;
+        $profit = ($request->sale_price - $buy_price) * $request->quantity - $charges;
+
+        $sale->update([
+            'category_id' => $request->category_id,
+            'product_id' => $request->product_id,
+            'employee_id' => $request->employee_id,
+            'quantity' => $request->quantity,
+            'buy_price' => $buy_price,
+            'sale_price' => $request->sale_price,
+            'charges' => $charges,
+            'province' => $request->province,
+            'profit' => $profit,
+            'total' => $total,
+        ]);
+
+        // بروزرسانی stock
+        $product->quantity -= $difference;
+        $product->save();
+
+        $notification = array(
+            'message' => 'فروش موفقانه ویرایش شد',
+            'alert-type' => 'success'
+        );
+
+        return redirect()->route('all.sales')->with($notification);
+    }
+
+    public function DeleteSales($id){
+        $sale = Sale::findOrFail($id);
+        $product = Product::findOrFail($sale->product_id);
+
+        // برگرداندن stock
+        $product->quantity += $sale->quantity;
+        $product->save();
+
+        $sale->delete();
+
+        $notification = array(
+            'message' => 'فروش حذف شد',
+            'alert-type' => 'error'
+        );
+
+        return redirect()->route('all.sales')->with($notification);
+    }
+
+    public function DetailsSales($id){
+        $sale = Sale::with(['product', 'employee', 'category'])->findOrFail($id);
+        return view('backend.pages.sales.sales_details', compact('sale'));
+    }
 }
