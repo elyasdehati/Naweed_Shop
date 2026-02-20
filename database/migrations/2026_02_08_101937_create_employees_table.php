@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('province');
             $table->string('email');
             $table->string('phone');
+            $table->string('national_id');
             $table->timestamps();
         });
     }

@@ -96,6 +96,23 @@
                                 <input type="text" class="form-control" name="province" value="{{ $sale->province }}"> 
                             </div>
 
+                            <div class="form-group col-md-4">
+                                <label class="form-label">وضعیت فروش:</label>
+                                <select name="status" class="form-control">
+                                    <option value="pending" {{ $sale->status == 'pending' ? 'selected' : '' }}>
+                                        در انتظار
+                                    </option>
+
+                                    <option value="completed" {{ $sale->status == 'completed' ? 'selected' : '' }}>
+                                        تکمیل شده
+                                    </option>
+
+                                    <option value="cancelled" {{ $sale->status == 'cancelled' ? 'selected' : '' }}>
+                                        لغو شده
+                                    </option>
+                                </select>
+                            </div>
+
                             <div class="col-12">
                                 <button class="btn btn-primary" type="submit">ذخیره تغییرات</button>
                             </div> 

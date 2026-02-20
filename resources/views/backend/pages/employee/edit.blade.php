@@ -63,6 +63,11 @@
                     <input type="text" class="form-control" name="phone" value="{{ $employee->phone }}">
                 </div>
 
+                <div class="col-md-4">
+                    <label for="national_id" class="form-label">نمبر تذکره</label>
+                    <input type="text" class="form-control" name="national_id" value="{{ $employee->national_id }}">
+                </div>
+
                 <div class="col-12">
                     <button class="btn btn-primary" type="submit">ذخیره</button>
                 </div>

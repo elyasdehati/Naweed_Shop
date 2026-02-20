@@ -22,6 +22,7 @@ return new class extends Migration
             $table->decimal('charges', 10,2)->nullable();
             $table->string('province');
             $table->decimal('profit', 10,2)->nullable();
+            $table->enum('status', ['pending','completed','cancelled'])->default('pending');
             $table->decimal('total', 10,2);
             $table->timestamps();
 

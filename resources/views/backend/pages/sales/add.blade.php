@@ -67,11 +67,6 @@
                                     <input type="number" class="form-control" name="quantity" min="1" required> 
                                 </div>
 
-                                {{-- <div class="col-md-4"> 
-                                    <label class="form-label" for="buy_price">قیمت خرید : </label> 
-                                    <input type="text" name="buy_price" class="form-control"> 
-                                </div> --}}
-
                                 <div class="col-md-4"> 
                                     <label class="form-label" for="sale_price">قیمت فروش : </label> 
                                     <input type="text" name="sale_price" class="form-control"> 
@@ -87,15 +82,14 @@
                                     <input type="text" class="form-control" name="province"> 
                                 </div>
 
-                                {{-- <div class="col-md-4"> 
-                                    <label class="form-label" for="profit">مفاد : </label> 
-                                    <input type="text" name="profit" class="form-control"> 
-                                </div> --}}
-
-                                {{-- <div class="col-md-4"> 
-                                    <label class="form-label" for="total">مجموعه : </label> 
-                                    <input type="text" name="total" class="form-control"> 
-                                </div> --}}
+                                <div class="form-group col-md-4">
+                                    <label class="form-label">وضعیت فروش:</label>
+                                    <select name="status" class="form-control">
+                                        <option value="pending">در انتظار</option>
+                                        <option value="completed">تکمیل شده</option>
+                                        <option value="cancelled">لغو شده</option>
+                                    </select>
+                                </div>
 
                                 <div class="col-12">
                                     <button class="btn btn-primary" type="submit">ذخیره</button>

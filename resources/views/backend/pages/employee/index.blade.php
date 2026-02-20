@@ -37,6 +37,7 @@
                         <th class="text-center">ولایت</th>
                         <th class="text-center">ایمیل</th>
                         <th class="text-center">شماره تماس</th>
+                        <th class="text-center">نمبر تذکره</th>
                         <th class="text-center">عملیات</th>
                     </tr>
                     </thead>
@@ -49,6 +50,7 @@
                                 <td class="text-center">{{ $item->province }}</td>
                                 <td class="text-center">{{ $item->email }}</td>
                                 <td class="text-center">{{ $item->phone }}</td>
+                                <td class="text-center">{{ $item->national_id }}</td>
                                 <td>
                                     <a href="{{ route('edit.employee', $item->id) }}" class="btn btn-success btn-sm">ویرایش</a>
                                     <a href="{{ route('delete.employee', $item->id) }}" id="delete" class="btn btn-danger btn-sm delete-confirm">حذف</a>

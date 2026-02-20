@@ -38,7 +38,7 @@
                         {{-- <th class="text-center">قیمت خرید</th> --}}
                         <th class="text-center">قیمت فروش</th>
                         <th class="text-center">مصارف و کرایه</th>
-                        {{-- <th class="text-center">ولایت</th> --}}
+                        <th class="text-center">حالت</th>
                         <th class="text-center">مفاد</th>
                         <th class="text-center">مجموعه</th>
                         {{-- <th class="text-center">مجموعه</th> --}}
@@ -55,8 +55,17 @@
                                 {{-- <td class="text-center">{{ $item->buy_price }}</td> --}}
                                 <td class="text-center">{{ $item->sale_price }}</td>
                                 <td class="text-center">{{ $item->charges }}</td>
-                                {{-- <td class="text-center">{{ $item->province }}</td> --}}
-                                {{-- <td class="text-center">{{ $item->profit }}</td> --}}
+                                <td class="text-center">
+                                    @if($item->status == 'pending')
+                                        <span class="badge text-bg-warning">در انتظار</span>
+
+                                    @elseif($item->status == 'completed')
+                                        <span class="badge text-bg-success">تکمیل شده</span>
+
+                                    @elseif($item->status == 'cancelled')
+                                        <span class="badge text-bg-danger">لغو شده</span>
+                                    @endif
+                                </td>
                                 <td class="text-center">
                                     @if ($item->profit < $item->buy_price)
                                         <span class="badge text-bg-danger">{{ $item->profit }}</span>

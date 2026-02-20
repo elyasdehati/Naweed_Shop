@@ -26,6 +26,7 @@ class BackendController extends Controller
             'province' => 'required|string|max:255',
             'email' => 'required|email|unique:employees,email',
             'phone' => 'nullable|string|max:20',
+            'national_id' => 'required|string|unique:employees,national_id',
         ], [
             'name.required' => 'لطفا نام کارمند را وارد کنید',
             'lname.required' => 'لطفا تخلص کارمند را وارد کنید',
@@ -33,6 +34,8 @@ class BackendController extends Controller
             'email.required' => 'لطفا ایمیل کارمند را وارد کنید',
             'email.email' => 'Enter a valid email address',
             'email.unique' => 'This email is already taken',
+            'national_id.required' => 'لطفا شماره تذکره را وارد کنید',
+            'national_id.unique' => 'این شماره تذکره قبلا ثبت شده',
         ]);
 
         Employee::create([
@@ -41,6 +44,7 @@ class BackendController extends Controller
             'province' => $request->province,
             'email' => $request->email,
             'phone' => $request->phone,
+            'national_id' => $request->national_id,
         ]);
 
         $notification = array(
@@ -63,6 +67,7 @@ class BackendController extends Controller
             'province' => 'required|string|max:255',
             'email' => "required|email|unique:employees,email,{$emp_id}",
             'phone' => 'nullable|string|max:20',
+            'national_id' => "required|string|unique:employees,national_id,{$emp_id}",
         ], [
             'name.required' => 'لطفا نام کارمند را وارد کنید',
             'lname.required' => 'لطفا تخلص کارمند را وارد کنید',
@@ -70,6 +75,8 @@ class BackendController extends Controller
             'email.required' => 'لطفا ایمیل کارمند را وارد کنید',
             'email.email' => 'Enter a valid email address',
             'email.unique' => 'This email is already taken',
+            'national_id.required' => 'لطفا شماره تذکره را وارد کنید', 
+            'national_id.unique' => 'این شماره تذکره قبلا ثبت شده', 
         ]);
 
         Employee::find($emp_id)->update([
@@ -78,6 +85,7 @@ class BackendController extends Controller
             'province' => $request->province,
             'email' => $request->email,
             'phone' => $request->phone,
+            'national_id' => $request->national_id,
         ]);
 
         $notification = array(
@@ -313,20 +321,33 @@ class BackendController extends Controller
             'employee_id' => 'required',
             'quantity' => 'required|integer|min:1',
             'sale_price' => 'required|numeric',
-            'province' => 'required'
+            'province' => 'required',
+            'status' => 'required|in:pending,completed,cancelled',
         ]);
 
         $product = Product::findOrFail($request->product_id);
 
-        // چک کردن موجودی
-        if($product->quantity < $request->quantity){
-            return back()->withErrors('موجودی کافی نیست');
-        }
+        if($request->status == 'completed'){
 
-        $buy_price = $product->price;
-        $charges = $request->charges ?? 0;
-        $total = ($request->sale_price * $request->quantity) - $charges;
-        $profit = ($request->sale_price - $buy_price) * $request->quantity - $charges;
+            if($product->quantity < $request->quantity){
+                return back()->withErrors('موجودی کافی نیست');
+            }
+
+            $buy_price = $product->price;
+            $charges = $request->charges ?? 0;
+            $total = ($request->sale_price * $request->quantity) - $charges;
+            $profit = ($request->sale_price - $buy_price) * $request->quantity - $charges;
+
+            $product->quantity -= $request->quantity;
+            $product->save();
+
+        }else{
+
+            $buy_price = $product->price;
+            $charges = 0;
+            $total = 0;
+            $profit = 0;
+        }
 
         Sale::create([
             'category_id' => $request->category_id,
@@ -337,12 +358,10 @@ class BackendController extends Controller
             'sale_price' => $request->sale_price,
             'charges' => $charges,
             'province' => $request->province,
+            'status' => $request->status,
             'profit' => $profit,
             'total' => $total,
         ]);
-
-        $product->quantity -= $request->quantity;
-        $product->save();
 
         $notification = array(
             'message' => 'فروش موفقانه اضافه شد',
@@ -367,42 +386,66 @@ class BackendController extends Controller
             'employee_id' => 'required',
             'quantity' => 'required|integer|min:1',
             'sale_price' => 'required|numeric',
-            'province' => 'required'
+            'province' => 'required',
+            'status' => 'required|in:pending,completed,cancelled',
         ]);
 
         $sale = Sale::findOrFail($id);
         $product = Product::findOrFail($request->product_id);
 
-        // محاسبه تغییر مقدار
+        $oldStatus = $sale->status;
+        $newStatus = $request->status;
+
         $oldQty = $sale->quantity;
         $newQty = $request->quantity;
         $difference = $newQty - $oldQty;
 
-        if($product->quantity < $difference){
-            return back()->withErrors('موجودی کافی نیست');
+        if($newStatus == 'completed'){
+
+            if($oldStatus != 'completed'){
+                if($product->quantity < $newQty){
+                    return back()->withErrors('موجودی کافی نیست');
+                }
+                $product->quantity -= $newQty;
+            }
+
+            if($oldStatus == 'completed'){
+                if($product->quantity < $difference){
+                    return back()->withErrors('موجودی کافی نیست');
+                }
+                $product->quantity -= $difference;
+            }
+
+            $charges = $request->charges ?? 0;
+            $total = ($request->sale_price * $request->quantity) - $charges;
+            $profit = ($request->sale_price - $product->price) * $request->quantity - $charges;
+
+        }else{
+
+            if($oldStatus == 'completed'){
+                $product->quantity += $oldQty;
+            }
+
+            $charges = 0;
+            $total = 0;
+            $profit = 0;
         }
 
-        $buy_price = $product->price;
-        $charges = $request->charges ?? 0;
-        $total = ($request->sale_price * $request->quantity) - $charges;
-        $profit = ($request->sale_price - $buy_price) * $request->quantity - $charges;
+        $product->save();
 
         $sale->update([
             'category_id' => $request->category_id,
             'product_id' => $request->product_id,
             'employee_id' => $request->employee_id,
             'quantity' => $request->quantity,
-            'buy_price' => $buy_price,
+            'buy_price' => $product->price,
             'sale_price' => $request->sale_price,
             'charges' => $charges,
             'province' => $request->province,
+            'status' => $newStatus,
             'profit' => $profit,
             'total' => $total,
         ]);
-
-        // بروزرسانی stock
-        $product->quantity -= $difference;
-        $product->save();
 
         $notification = array(
             'message' => 'فروش موفقانه ویرایش شد',
@@ -416,9 +459,10 @@ class BackendController extends Controller
         $sale = Sale::findOrFail($id);
         $product = Product::findOrFail($sale->product_id);
 
-        // برگرداندن stock
-        $product->quantity += $sale->quantity;
-        $product->save();
+        if($sale->status == 'completed'){
+            $product->quantity += $sale->quantity;
+            $product->save();
+        }
 
         $sale->delete();
 
