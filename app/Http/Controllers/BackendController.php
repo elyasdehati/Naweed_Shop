@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Employee;
+use App\Models\Expense;
 use App\Models\Product;
 use App\Models\Sale;
 use Illuminate\Http\Request;
@@ -478,4 +479,80 @@ class BackendController extends Controller
         $sale = Sale::with(['product', 'employee', 'category'])->findOrFail($id);
         return view('backend.pages.sales.sales_details', compact('sale'));
     }
+
+
+    // --------------  Expenses -----------------
+    public function AllExpenses(){
+        $expenses = Expense::get();
+        return view('backend.pages.expenses.index', compact('expenses'));
+    }
+
+    public function AddExpenses(){
+        $employee = Employee::all();
+        return view('backend.pages.expenses.add', compact('employee'));
+    }
+
+    public function StoreExpenses(Request $request){
+        $request->validate([
+            'type' => 'required|in:employee,shop',
+            'employee_id' => 'nullable|exists:employees,id',
+            'title' => 'required|string|max:255',
+            'amount' => 'required|numeric|min:0',
+            'date' => 'required|date',
+            'note' => 'nullable|string',
+        ]);
+
+        $employee_id = $request->type === 'employee' ? $request->employee_id : null;
+
+        Expense::create([
+            'type' => $request->type,
+            'employee_id' => $employee_id,
+            'title' => $request->title,
+            'amount' => $request->amount,
+            'date' => $request->date,
+            'note' => $request->note,
+        ]);
+
+        return redirect()->route('all.expenses')->with('success', 'مصرف با موفقیت ثبت شد');
+    }
+
+    public function EditExpenses($id){
+        $expense = Expense::find($id);
+        $employee = Employee::all();
+        return view('backend.pages.expenses.edit', compact('expense', 'employee'));
+    }
+
+    public function UpdateExpenses(Request $request, $id){
+        $request->validate([
+            'type' => 'required|in:employee,shop',
+            'employee_id' => 'nullable|exists:employees,id',
+            'title' => 'required|string|max:255',
+            'amount' => 'required|numeric|min:0',
+            'date' => 'required|date',
+            'note' => 'nullable|string',
+        ]);
+
+        $expense = Expense::findOrFail($id);
+
+        $employee_id = $request->type === 'employee' ? $request->employee_id : null;
+
+        $expense->update([
+            'type' => $request->type,
+            'employee_id' => $employee_id,
+            'title' => $request->title,
+            'amount' => $request->amount,
+            'date' => $request->date,
+            'note' => $request->note,
+        ]);
+
+        return redirect()->route('all.expenses')->with('success', 'مصرف با موفقیت بروزرسانی شد');
+    }
+
+    public function DeleteExpenses($id){
+        $expense = Expense::findOrFail($id);
+        $expense->delete();
+
+        return redirect()->back()->with('success', 'مصرف با موفقیت حذف شد.');
+    }
+
 }

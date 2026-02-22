@@ -58,6 +58,16 @@ Route::middleware('auth')->group(function () {
         Route::get('/details/sales/{id}', 'DetailsSales')->name('details.sales');
     });
     Route::get('/get-products/{category_id}', [BackendController::class, 'GetProducts']);
+
+    //  expenses
+    Route::controller(BackendController::class)->group(function () {
+        Route::get('all/expenses', 'AllExpenses')->name('all.expenses');
+        Route::get('add/expenses', 'AddExpenses')->name('add.expenses');
+        Route::post('/store/expenses', 'StoreExpenses')->name('store.expenses');
+        Route::get('/edit/expenses/{id}', 'EditExpenses')->name('edit.expenses');
+        Route::post('/update/expenses/{id}','UpdateExpenses')->name('update.expenses');
+        Route::get('/delete/expenses/{id}', 'DeleteExpenses')->name('delete.expenses');
+    });
 });
 
 require __DIR__.'/auth.php';

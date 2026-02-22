@@ -126,6 +126,25 @@
                     </div>
                 </li>
 
+                <li>
+                    <a href="#charges" data-bs-toggle="collapse">
+                        <i data-feather="bar-chart-2"></i>
+                        <span> مصارف </span>
+                        <span class="menu-arrow"></span>
+                    </a>
+                    <div class="collapse" id="charges">
+                        <ul class="nav-second-level">
+                            <li>
+                                <a href="{{ route('all.expenses') }}" class="tp-link">لیست مصارف</a>
+                            </li>
+
+                            <li>
+                                <a href="{{ route('add.expenses') }}" class="tp-link">افزودن مصرف</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+
             </ul>
 
         </div>
