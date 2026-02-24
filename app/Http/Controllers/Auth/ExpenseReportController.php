@@ -32,5 +32,18 @@ class ExpenseReportController extends Controller
 
     return view('backend.report.all_invoice', compact('expense'));
 }
+
+public function AllByMonth(Request $request)
+{
+    $request->validate([
+        'month' => 'required'
+    ]);
+
+    $expenses = Expense::with('employee')
+        ->whereMonth('date', $request->month)
+        ->get();
+
+    return view('backend.report.search_all_month', compact('expenses'));
+}
     
 }

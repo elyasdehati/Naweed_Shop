@@ -74,6 +74,7 @@ Route::middleware('auth')->group(function () {
         Route::get('all/report' , 'AllReport')->name('all.report');
         Route::post('search/bydate', 'SearchByDate')->name('search.by.date');
         Route::get('/all/invoice/{id}', 'AllInvoice')->name('all.invoice');
+        Route::post('/search/bymonth', 'AllByMonth')->name('search.by.month');
     });
 });
 
