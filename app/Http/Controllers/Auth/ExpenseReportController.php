@@ -53,7 +53,9 @@ public function AllByYear(Request $request)
     ]);
 
     $expenses = Expense::with('employee')
+        ->selectRaw('employee_id, COUNT(*) as total_expenses, SUM(amount) as total_amount')
         ->whereYear('date', $request->year)
+        ->groupBy('employee_id')
         ->get();
 
     return view('backend.report.search_all_year', compact('expenses'));
