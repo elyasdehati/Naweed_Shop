@@ -1,0 +1,36 @@
+<?php
+
+namespace App\Http\Controllers\Auth;
+
+use App\Http\Controllers\Controller;
+use App\Models\Expense;
+use DateTime;
+use Illuminate\Http\Request;
+
+class ExpenseReportController extends Controller
+{
+
+    public function AllReport() {
+        return view('backend.report.all_report');
+    }
+
+    public function SearchByDate(Request $request)
+{
+    $date = new DateTime($request->date);
+    $formatDate = $date->format('Y-m-d');
+
+    $expenses = Expense::with('employee')
+        ->whereDate('date', $formatDate)   // ← IMPORTANT PART
+        ->get();
+
+    return view('backend.report.search_by_data', compact('expenses'));
+}
+
+    public function AllInvoice($id)
+{
+    $expense = Expense::with('employee')->findOrFail($id);
+
+    return view('backend.report.all_invoice', compact('expense'));
+}
+    
+}

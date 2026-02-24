@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\ExpenseReportController;
 use App\Http\Controllers\BackendController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -67,6 +68,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/edit/expenses/{id}', 'EditExpenses')->name('edit.expenses');
         Route::post('/update/expenses/{id}','UpdateExpenses')->name('update.expenses');
         Route::get('/delete/expenses/{id}', 'DeleteExpenses')->name('delete.expenses');
+    });
+
+    Route::controller(ExpenseReportController::class)->group(function() {
+        Route::get('all/report' , 'AllReport')->name('all.report');
+        Route::post('search/bydate', 'SearchByDate')->name('search.by.date');
+        Route::get('/all/invoice/{id}', 'AllInvoice')->name('all.invoice');
     });
 });
 
