@@ -45,5 +45,18 @@ public function AllByMonth(Request $request)
 
     return view('backend.report.search_all_month', compact('expenses'));
 }
+
+public function AllByYear(Request $request)
+{
+    $request->validate([
+        'year' => 'required'
+    ]);
+
+    $expenses = Expense::with('employee')
+        ->whereYear('date', $request->year)
+        ->get();
+
+    return view('backend.report.search_all_year', compact('expenses'));
+}
     
 }
