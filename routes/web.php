@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\ExpenseReportController;
 use App\Http\Controllers\BackendController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Reports\ReportsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -70,12 +71,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/delete/expenses/{id}', 'DeleteExpenses')->name('delete.expenses');
     });
 
-    Route::controller(ExpenseReportController::class)->group(function() {
-        Route::get('all/report' , 'AllReport')->name('all.report');
-        Route::post('search/bydate', 'SearchByDate')->name('search.by.date');
-        Route::get('/all/invoice/{id}', 'AllInvoice')->name('all.invoice');
-        Route::post('/search/bymonth', 'AllByMonth')->name('search.by.month');
-        Route::post('/search/year', 'AllByYear')->name('search.by.year');
+    Route::controller(ReportsController::class)->group(function() {
+        Route::get('all/expenses/reports' , 'AllExpensesReport')->name('all.expenses.report');
+        Route::post('search/expenses/bydate', 'SearchExpensesByDate')->name('search.expenses.by.date');
+        Route::get('/all/expenses/invoice/{employee_id?}', 'AllExpensesInvoice')->name('all.expenses.invoice');
+        Route::post('/search/expenses/bymonth', 'AllExpensesByMonth')->name('search.expenses.by.month');
+        Route::post('/search/expenses/year', 'AllExpensesByYear')->name('search.expenses.by.year');
     });
 });
 

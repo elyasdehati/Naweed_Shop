@@ -316,6 +316,13 @@ class BackendController extends Controller
     }
 
     public function StoreSales(Request $request){
+        // تبدیل اعداد فارسی به انگلیسی قبل از validate
+        $request->merge([
+            'quantity' => str_replace(['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'], ['0','1','2','3','4','5','6','7','8','9'], $request->quantity),
+            'sale_price' => str_replace(['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'], ['0','1','2','3','4','5','6','7','8','9'], $request->sale_price),
+            'charges' => isset($request->charges) ? str_replace(['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'], ['0','1','2','3','4','5','6','7','8','9'], $request->charges) : 0,
+        ]);
+
         $request->validate([
             'category_id' => 'required',
             'product_id' => 'required',
@@ -326,20 +333,24 @@ class BackendController extends Controller
             'status' => 'required|in:pending,completed,cancelled',
         ]);
 
+        // تبدیل به عدد برای محاسبه‌ها
+        $quantity = (int) $request->quantity;
+        $sale_price = (float) $request->sale_price;
+        $charges = (float) $request->charges;
+
         $product = Product::findOrFail($request->product_id);
 
         if($request->status == 'completed'){
 
-            if($product->quantity < $request->quantity){
+            if($product->quantity < $quantity){
                 return back()->withErrors('موجودی کافی نیست');
             }
 
             $buy_price = $product->price;
-            $charges = $request->charges ?? 0;
-            $total = ($request->sale_price * $request->quantity) - $charges;
-            $profit = ($request->sale_price - $buy_price) * $request->quantity - $charges;
+            $total = ($sale_price * $quantity) - $charges;
+            $profit = ($sale_price - $buy_price) * $quantity - $charges;
 
-            $product->quantity -= $request->quantity;
+            $product->quantity -= $quantity;
             $product->save();
 
         }else{
@@ -354,9 +365,9 @@ class BackendController extends Controller
             'category_id' => $request->category_id,
             'product_id' => $request->product_id,
             'employee_id' => $request->employee_id,
-            'quantity' => $request->quantity,
+            'quantity' => $quantity,
             'buy_price' => $buy_price,
-            'sale_price' => $request->sale_price,
+            'sale_price' => $sale_price,
             'charges' => $charges,
             'province' => $request->province,
             'status' => $request->status,

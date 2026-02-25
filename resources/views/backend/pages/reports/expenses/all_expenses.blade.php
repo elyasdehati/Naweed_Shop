@@ -7,7 +7,7 @@
 
             <div class="py-3 d-flex align-items-sm-center flex-sm-row flex-column">
                 <div class="flex-grow-1">
-                    <h4 class="fs-18 fw-semibold m-0">Report</h4>
+                    <h4 class="fs-18 fw-semibold m-0">گذارش مصارفات </h4>
                 </div>
 
                 {{-- <div class="text-end">
@@ -35,21 +35,19 @@
                                     <div class="card">
                                         <div class="card-body">
 
-                                            <form action="{{ route('search.by.date') }}" method="post">
+                                            <form action="{{ route('search.expenses.by.date') }}" method="post">
                                                 @csrf
 
-                                                <h4>Search By Date</h4>
+                                                <h5>جستجو بر اساس تاریخ</h5>
 
                                                 <div class="mb-3">
-                                                    <label class="form-label">Select Date</label>
+                                                    <label class="form-label">انتخاب تاریخ</label>
                                                     <input class="form-control" type="date" name="date"
                                                         id="example-text-input">
-
-
                                                 </div>
 
                                                 <button type="submit" class="btn btn-primary w-100">
-                                                    Search
+                                                    جستجو
                                                 </button>
                                             </form>
 
@@ -62,13 +60,13 @@
                                     <div class="card">
                                         <div class="card-body">
 
-                                            <form action="{{ route('search.by.month') }}" method="post">
+                                            <form action="{{ route('search.expenses.by.month') }}" method="post">
                                                 @csrf
 
-                                                <h4>Search By Month</h4>
+                                                <h5>جستجو بر اساس ماه</h5>
 
                                                 <div class="mb-3">
-                                                    <label class="form-label">Select Month</label>
+                                                    <label class="form-label">انتخاب ماه</label>
 
                                                     <select name="month" class="form-select">
                                                         <option value="">Select Month</option>
@@ -88,7 +86,7 @@
                                                 </div>
 
                                                 <button type="submit" class="btn btn-primary w-100">
-                                                    Search
+                                                    جستجو
                                                 </button>
                                             </form>
 
@@ -100,13 +98,13 @@
                                     <div class="card">
                                         <div class="card-body">
 
-                                            <form action="{{ route('search.by.year') }}" method="post">
+                                            <form action="{{ route('search.expenses.by.year') }}" method="post">
                                                 @csrf
 
-                                                <h4>Search By Year</h4>
+                                                <h5>جستجو بر اساس سال</h5>
 
                                                 <div class="mb-3">
-                                                    <label class="form-label">Select Year</label>
+                                                    <label class="form-label">انتخاب سال</label>
 
                                                     <select name="year" class="form-select">
                                                         <option value="">Select Year</option>
@@ -120,7 +118,7 @@
                                                 </div>
 
                                                 <button type="submit" class="btn btn-primary w-100">
-                                                    Search
+                                                    جستجو
                                                 </button>
                                             </form>
 
