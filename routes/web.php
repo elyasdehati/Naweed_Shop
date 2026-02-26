@@ -71,12 +71,22 @@ Route::middleware('auth')->group(function () {
         Route::get('/delete/expenses/{id}', 'DeleteExpenses')->name('delete.expenses');
     });
 
+    // Expense Reports
     Route::controller(ReportsController::class)->group(function() {
         Route::get('all/expenses/reports' , 'AllExpensesReport')->name('all.expenses.report');
         Route::post('search/expenses/bydate', 'SearchExpensesByDate')->name('search.expenses.by.date');
         Route::get('/all/expenses/invoice/{employee_id?}', 'AllExpensesInvoice')->name('all.expenses.invoice');
         Route::post('/search/expenses/bymonth', 'AllExpensesByMonth')->name('search.expenses.by.month');
         Route::post('/search/expenses/year', 'AllExpensesByYear')->name('search.expenses.by.year');
+    });
+
+    // Main Reports
+    Route::controller(ReportsController::class)->group(function() {
+        Route::get('all/reports' , 'AllReport')->name('all.report');
+        Route::post('search/reports/bydate', 'SearchReportsByDate')->name('search.reports.by.date');
+        Route::get('/all/reports/invoice/{employee_id?}', 'AllReportsInvoice')->name('all.reports.invoice');
+        Route::post('/search/reports/bymonth', 'AllReportsByMonth')->name('search.reports.by.month');
+        Route::post('/search/reports/year', 'AllReportsByYear')->name('search.reports.by.year');
     });
 });
 

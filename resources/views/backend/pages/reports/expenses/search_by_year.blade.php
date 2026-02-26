@@ -32,7 +32,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($expenses as $key => $item)
+                                @forelse ($expenses->values() as $key => $item)
                                 <tr>
                                     <td class="text-center">{{ $key + 1 }}</td>
                                     <td class="text-center fw-semibold">
@@ -45,9 +45,9 @@
                                     <td class="text-center text-primary fw-bold">{{ number_format($item->total_amount,2) }}</td>
                                     <td class="text-center">
                                         <a href="{{ route('all.expenses.invoice', [
-        'employee_id' => $item->employee_id ?: 0,
-        'year' => $year   // اضافه شد
-    ]) }}" class="btn btn-success btn-sm">مشاهده مصارف</a>
+                                            'employee_id' => $item->employee_id ?: 0,
+                                            'year' => $year   // اضافه شد
+                                        ]) }}" class="btn btn-success btn-sm">مشاهده مصارف</a>
                                     </td>
                                 </tr>
                                 @empty

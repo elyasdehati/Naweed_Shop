@@ -371,6 +371,7 @@ class BackendController extends Controller
             'charges' => $charges,
             'province' => $request->province,
             'status' => $request->status,
+            'date' => $request->date,
             'profit' => $profit,
             'total' => $total,
         ]);
@@ -454,7 +455,8 @@ class BackendController extends Controller
             'sale_price' => $request->sale_price,
             'charges' => $charges,
             'province' => $request->province,
-            'status' => $newStatus,
+            'status' => $request->status,
+            'date' => $request->date,
             'profit' => $profit,
             'total' => $total,
         ]);

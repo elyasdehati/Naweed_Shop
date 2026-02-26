@@ -83,6 +83,11 @@
                                 </div>
 
                                 <div class="form-group col-md-4">
+                                    <label class="form-label">تاریخ:</label>
+                                    <input type="date" name="date" class="form-control">
+                                </div>
+
+                                <div class="form-group col-md-4">
                                     <label class="form-label">وضعیت فروش:</label>
                                     <select name="status" class="form-control">
                                         <option value="pending">در انتظار</option>

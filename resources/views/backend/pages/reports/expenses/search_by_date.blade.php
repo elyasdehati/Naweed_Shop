@@ -34,7 +34,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($expenses as $key => $item)
+                        @forelse ($expenses->values() as $key => $item)
                         <tr>
                             <td class="text-center">{{ $key + 1 }}</td>
 
