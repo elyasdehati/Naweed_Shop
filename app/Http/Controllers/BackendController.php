@@ -7,12 +7,61 @@ use App\Models\Employee;
 use App\Models\Expense;
 use App\Models\Product;
 use App\Models\Sale;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Intervention\Image\Facades\Image;
 
 class BackendController extends Controller
 {
+    public function AdminLogout(Request $request){
+        Auth::guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return Redirect('login');
+    }
+
+    public function AdminProfile(){
+        $id = Auth::user()->id;
+        $profileData = User::find($id);
+        return view('backend.pages.profile.profile', compact('profileData'));
+    }
+
+    public function ProfileStore(Request $request){
+        $id = Auth::user()->id;
+        $data = User::find($id);
+
+        $data->username = $request->username;
+        $data->email = $request->email;
+        $data->phone = $request->phone;
+        $data->address = $request->address;
+
+        $oldPhotoPath = $data->photo;
+
+        if ($request->hasFile('photo')) {
+            $file = $request->file('photo');
+            $filename = time().'.'.$file->getClientOriginalExtension();
+            $file->move(public_path('upload/profile'),$filename);
+            $data->photo = $filename;
+
+            if ($oldPhotoPath && $oldPhotoPath !== $filename) {
+                $this->deleteOldImage($oldPhotoPath);
+            }
+        }
+
+        $data->save();
+        return redirect()->back();
+    }
+
+    private function deleteOldImage(string $oldPhotoPath) : void {
+        $fullPath = public_path('upload/profile/'.$oldPhotoPath);
+        if (file_exists($fullPath)) {
+            unlink($fullPath);
+        }
+    }
+
     public function AllEmployee(){
-        $employee = Employee::get();
+        $employee = Employee::latest()->get();
         return view('backend.pages.employee.index', compact('employee'));
     }
 
@@ -28,6 +77,7 @@ class BackendController extends Controller
             'email' => 'required|email|unique:employees,email',
             'phone' => 'nullable|string|max:20',
             'national_id' => 'required|string|unique:employees,national_id',
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ], [
             'name.required' => 'لطفا نام کارمند را وارد کنید',
             'lname.required' => 'لطفا تخلص کارمند را وارد کنید',
@@ -37,7 +87,17 @@ class BackendController extends Controller
             'email.unique' => 'This email is already taken',
             'national_id.required' => 'لطفا شماره تذکره را وارد کنید',
             'national_id.unique' => 'این شماره تذکره قبلا ثبت شده',
+            'photo.image' => 'فایل باید عکس باشد',
         ]);
+
+        $photoPath = null;
+
+        if ($request->hasFile('photo')) {
+            $file = $request->file('photo');
+            $filename = time().'.'.$file->getClientOriginalExtension();
+            $file->move(public_path('upload/employee'), $filename);
+            $photoPath = 'upload/employee/'.$filename;
+        }
 
         Employee::create([
             'name' => $request->name,
@@ -46,6 +106,7 @@ class BackendController extends Controller
             'email' => $request->email,
             'phone' => $request->phone,
             'national_id' => $request->national_id,
+            'photo' => $photoPath,
         ]);
 
         $notification = array(
@@ -69,6 +130,7 @@ class BackendController extends Controller
             'email' => "required|email|unique:employees,email,{$emp_id}",
             'phone' => 'nullable|string|max:20',
             'national_id' => "required|string|unique:employees,national_id,{$emp_id}",
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ], [
             'name.required' => 'لطفا نام کارمند را وارد کنید',
             'lname.required' => 'لطفا تخلص کارمند را وارد کنید',
@@ -79,6 +141,24 @@ class BackendController extends Controller
             'national_id.required' => 'لطفا شماره تذکره را وارد کنید', 
             'national_id.unique' => 'این شماره تذکره قبلا ثبت شده', 
         ]);
+
+        $employee = Employee::find($emp_id);
+
+        if ($request->hasFile('photo')) {
+
+            if ($employee->photo && file_exists(public_path($employee->photo))) {
+                unlink(public_path($employee->photo));
+            }
+
+            $file = $request->file('photo');
+            $filename = time().'.'.$file->getClientOriginalExtension();
+            $file->move(public_path('upload/employee'), $filename);
+            $photoPath = 'upload/employee/'.$filename;
+
+            $employee->update([
+                'photo' => $photoPath,
+            ]);
+        }
 
         Employee::find($emp_id)->update([
             'name' => $request->name,
@@ -97,19 +177,31 @@ class BackendController extends Controller
             return redirect()->route('all.employee')->with($notification);
     }
 
-     public function DeleteEmployee($id) {
-        Employee::find($id)->delete();
+    public function DetailsEmployee($id){
+        $emp = Employee::find($id);
+        return view('backend.pages.employee.details', compact('emp'));
+    }
+
+    public function DeleteEmployee($id) {
+        $employee = Employee::find($id);
+        
+        if ($employee->photo && file_exists(public_path($employee->photo))) {
+            unlink(public_path($employee->photo));
+        }
+
+        $employee->delete();
 
         $notification = array(
             'message' => 'کارمند حذف شد',
             'alert-type' => 'error'
         );
-            return redirect()->back()->with($notification);
+
+        return redirect()->back()->with($notification);
     }
 
     // --------------  Category -----------------
     public function AllCategory(){
-        $category = Category::get();
+        $category = Category::latest()->get();
         return view('backend.pages.category.index', compact('category'));
     }
 
@@ -316,73 +408,73 @@ class BackendController extends Controller
     }
 
     public function StoreSales(Request $request){
-        // تبدیل اعداد فارسی به انگلیسی قبل از validate
-        $request->merge([
-            'quantity' => str_replace(['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'], ['0','1','2','3','4','5','6','7','8','9'], $request->quantity),
-            'sale_price' => str_replace(['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'], ['0','1','2','3','4','5','6','7','8','9'], $request->sale_price),
-            'charges' => isset($request->charges) ? str_replace(['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'], ['0','1','2','3','4','5','6','7','8','9'], $request->charges) : 0,
-        ]);
+    // تبدیل اعداد فارسی به انگلیسی قبل از validate
+    $request->merge([
+        'quantity' => str_replace(['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'], ['0','1','2','3','4','5','6','7','8','9'], $request->quantity),
+        'sale_price' => str_replace(['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'], ['0','1','2','3','4','5','6','7','8','9'], $request->sale_price),
+        'charges' => isset($request->charges) ? str_replace(['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'], ['0','1','2','3','4','5','6','7','8','9'], $request->charges) : 0,
+    ]);
 
-        $request->validate([
-            'category_id' => 'required',
-            'product_id' => 'required',
-            'employee_id' => 'required',
-            'quantity' => 'required|integer|min:1',
-            'sale_price' => 'required|numeric',
-            'province' => 'required',
-            'status' => 'required|in:pending,completed,cancelled',
-        ]);
+    $request->validate([
+        'category_id' => 'required',
+        'product_id' => 'required',
+        'employee_id' => 'required',
+        'quantity' => 'required|integer|min:1',
+        'sale_price' => 'required|numeric',
+        'province' => 'required',
+        'status' => 'required|in:pending,completed,cancelled',
+    ]);
 
-        // تبدیل به عدد برای محاسبه‌ها
-        $quantity = (int) $request->quantity;
-        $sale_price = (float) $request->sale_price;
-        $charges = (float) $request->charges;
+    // تبدیل به عدد برای محاسبه‌ها
+    $quantity = (int) $request->quantity;
+    $sale_price = (float) $request->sale_price;
+    $charges = (float) $request->charges; // <<< تغییر: همیشه از request بگیریم حتی pending
 
-        $product = Product::findOrFail($request->product_id);
+    $product = Product::findOrFail($request->product_id);
 
-        if($request->status == 'completed'){
+    if($request->status == 'completed'){
 
-            if($product->quantity < $quantity){
-                return back()->withErrors('موجودی کافی نیست');
-            }
-
-            $buy_price = $product->price;
-            $total = ($sale_price * $quantity) - $charges;
-            $profit = ($sale_price - $buy_price) * $quantity - $charges;
-
-            $product->quantity -= $quantity;
-            $product->save();
-
-        }else{
-
-            $buy_price = $product->price;
-            $charges = 0;
-            $total = 0;
-            $profit = 0;
+        if($product->quantity < $quantity){
+            return back()->withErrors('موجودی کافی نیست');
         }
 
-        Sale::create([
-            'category_id' => $request->category_id,
-            'product_id' => $request->product_id,
-            'employee_id' => $request->employee_id,
-            'quantity' => $quantity,
-            'buy_price' => $buy_price,
-            'sale_price' => $sale_price,
-            'charges' => $charges,
-            'province' => $request->province,
-            'status' => $request->status,
-            'date' => $request->date,
-            'profit' => $profit,
-            'total' => $total,
-        ]);
+        $buy_price = $product->price;
+        $total = ($sale_price * $quantity) - $charges;
+        $profit = ($sale_price - $buy_price) * $quantity - $charges;
 
-        $notification = array(
-            'message' => 'فروش موفقانه اضافه شد',
-            'alert-type' => 'success'
-        );
+        $product->quantity -= $quantity;
+        $product->save();
 
-        return redirect()->route('all.sales')->with($notification);
+    }else{
+
+        $buy_price = $product->price;
+        // <<< تغییر: charges رو صفر نکنیم، فقط total و profit صفر بشن
+        $total = 0;
+        $profit = 0;
     }
+
+    Sale::create([
+        'category_id' => $request->category_id,
+        'product_id' => $request->product_id,
+        'employee_id' => $request->employee_id,
+        'quantity' => $quantity,
+        'buy_price' => $buy_price,
+        'sale_price' => $sale_price,
+        'charges' => $charges, // <<< تغییر اعمال شد
+        'province' => $request->province,
+        'status' => $request->status,
+        'date' => $request->date,
+        'profit' => $profit,
+        'total' => $total,
+    ]);
+
+    $notification = array(
+        'message' => 'فروش موفقانه اضافه شد',
+        'alert-type' => 'success'
+    );
+
+    return redirect()->route('all.sales')->with($notification);
+}
 
     public function EditSales($id){
         $sale = Sale::findOrFail($id);
@@ -393,81 +485,82 @@ class BackendController extends Controller
     }
 
     public function UpdateSales(Request $request, $id){
-        $request->validate([
-            'category_id' => 'required',
-            'product_id' => 'required',
-            'employee_id' => 'required',
-            'quantity' => 'required|integer|min:1',
-            'sale_price' => 'required|numeric',
-            'province' => 'required',
-            'status' => 'required|in:pending,completed,cancelled',
-        ]);
+    $request->validate([
+        'category_id' => 'required',
+        'product_id' => 'required',
+        'employee_id' => 'required',
+        'quantity' => 'required|integer|min:1',
+        'sale_price' => 'required|numeric',
+        'province' => 'required',
+        'status' => 'required|in:pending,completed,cancelled',
+    ]);
 
-        $sale = Sale::findOrFail($id);
-        $product = Product::findOrFail($request->product_id);
+    $sale = Sale::findOrFail($id);
+    $product = Product::findOrFail($request->product_id);
 
-        $oldStatus = $sale->status;
-        $newStatus = $request->status;
+    $oldStatus = $sale->status;
+    $newStatus = $request->status;
 
-        $oldQty = $sale->quantity;
-        $newQty = $request->quantity;
-        $difference = $newQty - $oldQty;
+    $oldQty = $sale->quantity;
+    $newQty = $request->quantity;
+    $difference = $newQty - $oldQty;
 
-        if($newStatus == 'completed'){
+    $charges = (float) ($request->charges ?? 0); // <<< تغییر: charges رو همیشه از request بگیریم
 
-            if($oldStatus != 'completed'){
-                if($product->quantity < $newQty){
-                    return back()->withErrors('موجودی کافی نیست');
-                }
-                $product->quantity -= $newQty;
+    if($newStatus == 'completed'){
+
+        if($oldStatus != 'completed'){
+            if($product->quantity < $newQty){
+                return back()->withErrors('موجودی کافی نیست');
             }
-
-            if($oldStatus == 'completed'){
-                if($product->quantity < $difference){
-                    return back()->withErrors('موجودی کافی نیست');
-                }
-                $product->quantity -= $difference;
-            }
-
-            $charges = $request->charges ?? 0;
-            $total = ($request->sale_price * $request->quantity) - $charges;
-            $profit = ($request->sale_price - $product->price) * $request->quantity - $charges;
-
-        }else{
-
-            if($oldStatus == 'completed'){
-                $product->quantity += $oldQty;
-            }
-
-            $charges = 0;
-            $total = 0;
-            $profit = 0;
+            $product->quantity -= $newQty;
         }
 
-        $product->save();
+        if($oldStatus == 'completed'){
+            if($product->quantity < $difference){
+                return back()->withErrors('موجودی کافی نیست');
+            }
+            $product->quantity -= $difference;
+        }
 
-        $sale->update([
-            'category_id' => $request->category_id,
-            'product_id' => $request->product_id,
-            'employee_id' => $request->employee_id,
-            'quantity' => $request->quantity,
-            'buy_price' => $product->price,
-            'sale_price' => $request->sale_price,
-            'charges' => $charges,
-            'province' => $request->province,
-            'status' => $request->status,
-            'date' => $request->date,
-            'profit' => $profit,
-            'total' => $total,
-        ]);
+        $total = ($request->sale_price * $request->quantity) - $charges;
+        $profit = ($request->sale_price - $product->price) * $request->quantity - $charges;
 
-        $notification = array(
-            'message' => 'فروش موفقانه ویرایش شد',
-            'alert-type' => 'success'
-        );
+    }else{
 
-        return redirect()->route('all.sales')->with($notification);
+        if($oldStatus == 'completed'){
+            $product->quantity += $oldQty;
+        }
+
+        // <<< تغییر: فقط total و profit صفر بشه، charges از request گرفته میشه
+        $total = 0;
+        $profit = 0;
     }
+
+    $product->save();
+
+    $sale->update([
+        'category_id' => $request->category_id,
+        'product_id' => $request->product_id,
+        'employee_id' => $request->employee_id,
+        'quantity' => $request->quantity,
+        'buy_price' => $product->price,
+        'sale_price' => $request->sale_price,
+        'charges' => $charges, // <<< تغییر اعمال شد
+        'province' => $request->province,
+        'status' => $request->status,
+        'date' => $request->date,
+        'profit' => $profit,
+        'total' => $total,
+    ]);
+
+    $notification = array(
+        'message' => 'فروش موفقانه ویرایش شد',
+        'alert-type' => 'success'
+    );
+
+    return redirect()->route('all.sales')->with($notification);
+}
 
     public function DeleteSales($id){
         $sale = Sale::findOrFail($id);
@@ -488,6 +581,52 @@ class BackendController extends Controller
         return redirect()->route('all.sales')->with($notification);
     }
 
+    // گرفتن فروش‌های pending
+    public function PendingNotifications(){
+        $sales = Sale::with('employee','product')
+                    ->where('status','pending')
+                    ->orderBy('date','desc')
+                    ->get();
+        return response()->json($sales);
+    }
+
+    public function ChangeStatus(Request $request, $id){
+    $sale = Sale::findOrFail($id);
+    $product = Product::findOrFail($sale->product_id);
+
+    $sale->status = $request->status;
+    $sale->charges = $sale->charges ?? 0; // charges هیچ وقت null نباشه
+
+    if($sale->status == 'completed'){
+        $quantity = $sale->quantity;
+        $buy_price = $product->price;
+        $sale_price = $sale->sale_price;
+
+        $sale->total = ($sale_price * $quantity) - $sale->charges;
+        $sale->profit = ($sale_price - $buy_price) * $quantity - $sale->charges;
+
+        if($product->quantity >= $quantity){
+            $product->quantity -= $quantity;
+            $product->save();
+        }
+    } else {
+        if($sale->status != 'pending'){
+            $product->quantity += $sale->quantity;
+            $product->save();
+        }
+        $sale->total = 0;
+        $sale->profit = 0;
+    }
+
+    // اضافه کن: تاریخ و province هم اگر لازم هست
+    $sale->date = $sale->date ?? now();
+    $sale->province = $sale->province ?? 'نامعلوم';
+
+    $sale->save();
+
+    return response()->json(['success'=>true]);
+}
+
     public function DetailsSales($id){
         $sale = Sale::with(['product', 'employee', 'category'])->findOrFail($id);
         return view('backend.pages.sales.sales_details', compact('sale'));
@@ -496,7 +635,7 @@ class BackendController extends Controller
 
     // --------------  Expenses -----------------
     public function AllExpenses(){
-        $expenses = Expense::get();
+        $expenses = Expense::latest()->get();
         return view('backend.pages.expenses.index', compact('expenses'));
     }
 
@@ -507,15 +646,19 @@ class BackendController extends Controller
 
     public function StoreExpenses(Request $request){
         $request->validate([
-            'type' => 'required|in:employee,shop',
-            'employee_id' => 'nullable|exists:employees,id',
+            'type' => 'required|in:employee,shop,withdraw',
+            'employee_id' => 'required_if:type,employee|required_if:type,withdraw|exists:employees,id',
             'title' => 'required|string|max:255',
             'amount' => 'required|numeric|min:0',
             'date' => 'required|date',
             'note' => 'nullable|string',
         ]);
 
-        $employee_id = $request->type === 'employee' ? $request->employee_id : null;
+        $employee_id = ($request->type === 'employee' || $request->type === 'withdraw') ? $request->employee_id : null;
+
+        if($request->type == 'withdraw' && !$request->employee_id){
+            return back()->withErrors(['employee_id' => 'برای برداشت باید کارمند انتخاب شود']);
+        }
 
         Expense::create([
             'type' => $request->type,
@@ -537,8 +680,8 @@ class BackendController extends Controller
 
     public function UpdateExpenses(Request $request, $id){
         $request->validate([
-            'type' => 'required|in:employee,shop',
-            'employee_id' => 'nullable|exists:employees,id',
+            'type' => 'required|in:employee,shop,withdraw',
+            'employee_id' => 'required_if:type,employee|required_if:type,withdraw|exists:employees,id',
             'title' => 'required|string|max:255',
             'amount' => 'required|numeric|min:0',
             'date' => 'required|date',
@@ -547,7 +690,9 @@ class BackendController extends Controller
 
         $expense = Expense::findOrFail($id);
 
-        $employee_id = $request->type === 'employee' ? $request->employee_id : null;
+        $employee_id = ($request->type === 'employee' || $request->type === 'withdraw') 
+                ? $request->employee_id 
+                : null;
 
         $expense->update([
             'type' => $request->type,

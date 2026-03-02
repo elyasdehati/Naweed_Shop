@@ -24,8 +24,8 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>#</th>
-                                    <th>نام کارمند</th>
                                     <th>تاریخ</th>
+                                    <th>نام کارمند</th>
                                     <th>تعداد مصارف</th>
                                     <th>مجموع مبلغ</th>
                                     <th>عملیات</th>
@@ -35,8 +35,16 @@
                                 @forelse ($dailyExpenses->values() as $key => $item)
                                 <tr>
                                     <td>{{ $key + 1 }}</td>
-                                    <td>{{ $item->employee_id ? ($item->employee->name ?? 'N/A') : 'Shop' }}</td>
                                     <td>{{ $item->last_date }}</td>
+                                    <td>
+                                        @if($item->all_expenses->first()->type == 'withdraw')
+                                            {{ $item->employee->name ?? 'N/A' }}
+                                        @elseif($item->employee_id)
+                                            {{ $item->employee->name ?? 'N/A' }}
+                                        @else
+                                            دوکان
+                                        @endif
+                                    </td>
                                     <td>{{ $item->total_expenses }}</td>
                                     <td>{{ number_format($item->total_amount,2) }}</td>
                                     <td>
@@ -130,10 +138,6 @@
                             <div class="d-flex justify-content-between mb-2">
                                 <span class="text-muted">مجموع مصارفات:</span>
                                 <strong>{{ number_format($dailyExpensesTotal,2) }}</strong>
-                            </div>
-                            <div class="d-flex justify-content-between mb-2">
-                                <span class="text-muted">قیمت محصولات :</span>
-                                <strong>{{ number_format($salesLossTotal,2) }}</strong>
                             </div>
                             <hr>
                             <div class="d-flex justify-content-between mb-2">

@@ -161,17 +161,14 @@ class ReportsController extends Controller
 
         // Sales
         $sales = Sale::with(['employee','product','category'])
+            ->where('status','completed')
             ->whereDate('created_at', $date)
             ->get();
 
         $salesTotal = $sales->sum('total');
 
-        // Sales profit (کل سود واقعی هر فروش = فروش کل - خرید کل - هزینه‌ها)
-        $salesProfitTotal = $sales->sum(function($sale){
-            return $sale->total - (($sale->buy_price * $sale->quantity) + ($sale->charges ?? 0));
-        });
-
-        // Sales loss (در صورت نیاز، کل زیان = مجموع فروش - سود واقعی)
+        // **تغییر: استفاده مستقیم از profit ذخیره شده**
+        $salesProfitTotal = $sales->sum('profit');
         $salesLossTotal = $salesTotal - $salesProfitTotal;
 
         // Final Amount = سود واقعی فروش - مصارف
@@ -215,6 +212,7 @@ class ReportsController extends Controller
 
         // Sales
         $sales = Sale::with(['employee','product','category'])
+            ->where('status','completed')
             ->whereMonth('created_at', $month)
             ->get();
         $salesTotal = $sales->sum('total');
@@ -261,16 +259,21 @@ class ReportsController extends Controller
 
         // Sales
         $sales = Sale::with(['employee','product','category'])
+            ->where('status','completed')
             ->whereYear('created_at', $year)
             ->get();
 
         $salesTotal = $sales->sum('total');
 
-        // Final Amount = Sales - Expenses
-        $finalAmount = $salesTotal - $dailyExpensesTotal;
+        // **تغییر: استفاده مستقیم از profit ذخیره شده**
+        $salesProfitTotal = $sales->sum('profit');
+        $salesLossTotal = $salesTotal - $salesProfitTotal;
+
+        // Final Amount = Sales profit - Expenses
+        $finalAmount = $salesProfitTotal - $dailyExpensesTotal;
 
         return view('backend.pages.reports.all_reports.search_by_year', compact(
-            'dailyExpenses', 'dailyExpensesTotal', 'sales', 'salesTotal', 'finalAmount', 'year'
+            'dailyExpenses', 'dailyExpensesTotal', 'sales', 'salesTotal', 'salesProfitTotal', 'salesLossTotal', 'finalAmount', 'year'
         ));
     }
 }

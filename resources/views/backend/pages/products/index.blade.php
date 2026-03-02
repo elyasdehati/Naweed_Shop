@@ -61,10 +61,10 @@
                                 <td class="text-center">{{ $item->price }}</td>
                                 <td class="text-center">{{ $item->code }}</td>
                                 <td class="text-center">{{ $item->note }}</td>
-                                <td> 
-                                    <img src="{{ asset($item->image) }}" alt="" style="width:70px; height: 40px">
+                                <td class="text-center"> 
+                                    <img src="{{ asset($item->image) }}" alt="" width="40" height="40" >
                                 </td>
-                                <td>
+                                <td class="text-center">
                                     <a href="{{ route('edit.products', $item->id) }}" class="btn btn-success btn-sm">ویرایش</a>
                                     <a href="{{ route('delete.products', $item->id) }}" id="delete" class="btn btn-danger btn-sm delete-confirm">حذف</a>
                                 </td>

@@ -13,12 +13,9 @@
                         <img src="{{ asset('backend/assets/images/logo-light.png') }}" alt="" height="24">
                     </span>
                 </a>
-                <a href="index.html" class="logo logo-dark">
-                    <span class="logo-sm">
-                        <img src="{{ asset('backend/assets/images/logo-sm.png') }}" alt="" height="22">
-                    </span>
-                    <span class="logo-lg">
-                        <img src="{{ asset('backend/assets/images/logo-dark.png') }}" alt="" height="24">
+                <a href="{{ route('dashboard') }}" class="logo logo-dark">
+                    <span class="logo-lg" style="float: left;">
+                        <img src="{{ asset('upload/logo/2.jpeg') }}" alt="" height="55">
                     </span>
                 </a>
             </div>
@@ -28,21 +25,10 @@
                 <li class="menu-title">Menu</li>
 
                 <li>
-                    <a href="#sidebarDashboards" data-bs-toggle="collapse">
+                    <a href="{{ route('dashboard') }}">
                         <i data-feather="home"></i>
                         <span> Dashboard </span>
-                        <span class="menu-arrow"></span>
                     </a>
-                    <div class="collapse" id="sidebarDashboards">
-                        <ul class="nav-second-level">
-                            <li>
-                                <a href="index.html" class="tp-link">Analytical</a>
-                            </li>
-                            <li>
-                                <a href="ecommerce.html" class="tp-link">E-commerce</a>
-                            </li>
-                        </ul>
-                    </div>
                 </li>
     
                 <!-- <li>

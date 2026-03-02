@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('expenses', function (Blueprint $table) {
             $table->id();
-            $table->enum('type', ['employee', 'shop']);
+            $table->enum('type', ['employee', 'shop', 'withdraw']);
             $table->unsignedBigInteger('employee_id')->nullable();
             $table->string('title');
             $table->decimal('amount', 10, 2);

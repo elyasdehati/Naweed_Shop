@@ -37,6 +37,7 @@
                                     <option value="">انتخاب نوع</option>
                                     <option value="employee" {{ $expense->type == 'employee' ? 'selected' : '' }}>کارمند</option>
                                     <option value="shop" {{ $expense->type == 'shop' ? 'selected' : '' }}>دکان</option>
+                                    <option value="withdraw" {{ $expense->type == 'withdraw' ? 'selected' : '' }}>برداشت کارمند</option>
                                 </select>
                             </div>
 
@@ -101,7 +102,7 @@ $(document).ready(function(){
             $('#employeeSelect').prop('disabled', true);
             $('#employeeSelect').addClass('is-invalid');
             $('#employeeDiv').hide();
-        } else {
+        } else if(type === 'employee' || type === 'withdraw'){
             $('#employeeSelect').prop('disabled', false);
             $('#employeeSelect').removeClass('is-invalid');
             $('#employeeDiv').show();

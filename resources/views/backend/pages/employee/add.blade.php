@@ -67,6 +67,11 @@
                     <input type="text" class="form-control" name="national_id">
                 </div>
 
+                <div class="col-md-4">
+                    <label for="photo" class="form-label">عکس</label>
+                    <input type="file" class="form-control" name="photo">
+                </div>
+
                 <div class="col-12">
                     <button class="btn btn-primary" type="submit">ذخیره</button>
                 </div>

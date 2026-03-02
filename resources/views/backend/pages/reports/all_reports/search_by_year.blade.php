@@ -24,8 +24,8 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>#</th>
+                                    <th>تاریخ</th>
                                     <th>نام کارمند</th>
-                                    <th>آخرین تاریخ مصرف</th>
                                     <th>تعداد مصارف</th>
                                     <th>مجموع مبلغ</th>
                                     <th>عملیات</th>
@@ -35,15 +35,25 @@
                                 @forelse ($dailyExpenses->values() as $key => $item)
                                 <tr>
                                     <td>{{ $key + 1 }}</td>
-                                    <td>{{ $item->employee_id ? ($item->employee->name ?? 'N/A') : 'Shop' }}</td>
                                     <td>{{ $item->last_date }}</td>
+                                    <td>
+                                        @if($item->all_expenses->first()->type == 'withdraw')
+                                            {{ $item->employee->name ?? 'N/A' }}
+                                        @elseif($item->employee_id)
+                                            {{ $item->employee->name ?? 'N/A' }}
+                                        @else
+                                            دوکان
+                                        @endif
+                                    </td>
                                     <td>{{ $item->total_expenses }}</td>
                                     <td>{{ number_format($item->total_amount,2) }}</td>
                                     <td>
                                         <a href="{{ route('all.expenses.invoice', [
                                             'employee_id' => $item->employee_id ?: 0,
-                                            'year' => $year   // اضافه شد
-                                        ]) }}" class="btn btn-success btn-sm">مشاهده مصارف</a>
+                                            'date' => $item->last_date
+                                        ]) }}" class="btn btn-success btn-sm">
+                                            مشاهده مصارف
+                                        </a>
                                     </td>
                                 </tr>
                                 @empty

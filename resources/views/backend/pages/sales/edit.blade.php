@@ -87,7 +87,7 @@
                             {{-- Charges --}}
                             <div class="col-md-4"> 
                                 <label class="form-label" for="charges">مصارف و کرایه : </label> 
-                                <input type="text" name="charges" class="form-control" value="{{ $sale->charges }}"> 
+                                <input type="text" name="charges" class="form-control" value="{{ $sale->charges ?? 0 }}"> 
                             </div>
 
                             {{-- Province --}}
@@ -98,7 +98,7 @@
 
                             <div class="form-group col-md-4">
                                 <label class="form-label">تاریخ:</label>
-                                <input type="date" name="date" class="form-control" value="{{ $sale->province }}">
+                                <input type="date" name="date" class="form-control" value="{{ $sale->date }}">
                             </div>
 
                             <div class="form-group col-md-4">

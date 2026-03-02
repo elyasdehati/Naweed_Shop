@@ -23,23 +23,39 @@
                             <thead>
                                 <tr>
                                     <th>#</th>
+                                    <th>نام کارمند</th>
                                     <th>تاریخ</th>
-                                    <th>عنوان</th>
+                                    <th>نوع مصرف</th>
                                     <th>مقدار</th>
-                                    <th>نوت</th>
+                                    <th>عنوان  </th>
+                                    <th>توضیحات</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @php $total = 0; @endphp
                                 @foreach ($expenses as $key => $expense)
-                                    <tr>
-                                        <td>{{ $key + 1 }}</td>
-                                        <td>{{ $expense->date }}</td>
-                                        <td>{{ $expense->title }}</td>
-                                        <td>{{ number_format($expense->amount, 2) }}</td>
-                                        <td>{{ $expense->note }}</td>
-                                    </tr>
-                                    @php $total += $expense->amount; @endphp
+                                <tr>
+                                    <td>{{ $key + 1 }}</td>
+                                    <td>{{ $expense->employee->name ?? 'دوکان' }}</td>
+                                    <td>{{ $expense->date }}</td>
+                                    <td>
+                                        @if($expense->type == 'withdraw')
+                                            برداشت
+                                        @elseif($expense->type == 'employee')
+                                            هزینه کارمند
+                                        @else
+                                            هزینه دکان
+                                        @endif
+                                    </td>
+                                    <td>{{ number_format($expense->amount, 2) }}</td>
+                                    <td>
+                                        {{ $expense->title }}
+                                    </td>
+                                    <td>
+                                        {{ $expense->note }}
+                                    </td>
+                                </tr>
+                                @php $total += $expense->amount; @endphp
                                 @endforeach
                             </tbody>
                         </table>

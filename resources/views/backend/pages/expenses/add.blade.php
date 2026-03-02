@@ -34,9 +34,10 @@
                             <div class="form-group col-md-4">
                                 <label class="form-label">نوع مصرف:</label>
                                 <select name="type" id="typeSelect" class="form-control">
-                                    <option value="">انتخاب نوع</option>
-                                    <option value="employee">کارمند</option>
-                                    <option value="shop">دکان</option>
+                                    <option value="">انتخاب نوع عملیات</option>
+                                    <option value="employee">هزینه کارمند</option>
+                                    <option value="shop">هزینه دکان</option>
+                                    <option value="withdraw">برداشت کارمند</option>
                                 </select>
                             </div>
 
@@ -92,34 +93,28 @@
 </div>
 
 <script>
-$(document).ready(function(){
+    $(document).ready(function(){
 
-    $('#typeSelect').change(function(){
+        function toggleEmployee() {
+            let type = $('#typeSelect').val();
 
-        let type = $(this).val();
-
-        if(type === 'shop'){
-
-            // غیرفعال
-            $('#employeeSelect').val('');
-            $('#employeeSelect').prop('disabled', true);
-
-            // رنگ سرخ
-            $('#employeeSelect').addClass('is-invalid');
-
-            // مخفی شدن
-            $('#employeeDiv').hide();
-
-        } else {
-
-            $('#employeeSelect').prop('disabled', false);
-            $('#employeeSelect').removeClass('is-invalid');
-            $('#employeeDiv').show();
+            if(type === 'shop'){
+                $('#employeeSelect').val('');
+                $('#employeeSelect').prop('disabled', true);
+                $('#employeeDiv').hide();
+            } else if(type === 'employee' || type === 'withdraw'){
+                $('#employeeSelect').prop('disabled', false);
+                $('#employeeDiv').show();
+            }
         }
 
-    });
+        toggleEmployee(); // برای حالت اولیه
 
-});
+        $('#typeSelect').change(function(){
+            toggleEmployee();
+        });
+
+    });
 </script>
 
 @endsection

@@ -19,6 +19,12 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    // Admin Profile
+    Route::controller(BackendController::class)->group(function () {
+        Route::get('/admin/profile','AdminProfile')->name('admin.profile');
+        Route::post('/profile/store','ProfileStore')->name('profile.store');
+    });
+
     //  Employee
     Route::controller(BackendController::class)->group(function () {
         Route::get('all/employee', 'AllEmployee')->name('all.employee');
@@ -27,6 +33,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/edit/employee/{id}', 'EditEmployee')->name('edit.employee');
         Route::post('/update/employee', 'UpdateEmployee')->name('update.employee');
         Route::get('/delete/employee/{id}', 'DeleteEmployee')->name('delete.employee');
+        Route::get('/details/employee/{id}', 'DetailsEmployee')->name('details.employee');
     });
 
     //  Category
@@ -58,6 +65,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/update/sales/{id}','UpdateSales')->name('update.sales');
         Route::get('/delete/sales/{id}', 'DeleteSales')->name('delete.sales');
         Route::get('/details/sales/{id}', 'DetailsSales')->name('details.sales');
+
+        Route::get('/sales/pending-notifications','PendingNotifications');
+        Route::post('/sales/change-status/{id}','ChangeStatus');
     });
     Route::get('/get-products/{category_id}', [BackendController::class, 'GetProducts']);
 
@@ -89,5 +99,6 @@ Route::middleware('auth')->group(function () {
         Route::post('/search/reports/year', 'AllReportsByYear')->name('search.reports.by.year');
     });
 });
+    Route::get('/admin/logout', [BackendController::class, 'AdminLogout'])->name('admin.logout');
 
 require __DIR__.'/auth.php';
