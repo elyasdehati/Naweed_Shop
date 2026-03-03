@@ -10,6 +10,7 @@ use App\Models\Sale;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Intervention\Image\Facades\Image;
 
 class BackendController extends Controller
@@ -60,6 +61,82 @@ class BackendController extends Controller
         }
     }
 
+    public function AdminPasswordUpdate(Request $request){
+        $user = Auth::user();
+        $request->validate([
+            'old_password' => 'required',
+            'new_password' => 'required|confirmed'
+        ]);
+
+        if (!Hash::check($request->old_password, $user->password)) {
+            $notification = array(
+                'message' => 'رمز قبلی درست نیست',
+                'alert-type' => 'error'
+            );
+            return redirect()->back()->with($notification);
+        }
+
+        User::whereId($user->id)->update([
+            'password' => Hash::make($request->new_password)
+        ]);
+        Auth::logout();
+        $notification = array(
+            'message' => 'پاسوورد موفقانه بروزرسانی شد',
+            'alert-type' => 'success'
+        );
+        return redirect()->route('login')->with($notification);
+    }
+
+    // Dashboard
+    public function Dashboard(){
+
+        $todaySales = Sale::where('status','completed')
+            ->whereDate('date', today())
+            ->sum('total');
+
+        // سود فروش خام
+        $salesProfit = Sale::where('status','completed')
+            ->whereDate('date', today())
+            ->sum('profit');
+
+        // مصارف بدون برداشت
+        $todayExpenses = Expense::whereDate('date', today())
+            ->where('type','!=','withdraw')
+            ->sum('amount');
+
+        // تعداد مصارف امروز
+        $todayExpensesCount = Expense::whereDate('date', today())
+            ->count();
+
+        // تعداد فروش‌های امروز
+        $todaySalesCount = Sale::where('status','completed')
+            ->whereDate('date', today())
+            ->count();
+
+        // برداشت جدا
+        $todayWithdraw = Expense::whereDate('date', today())
+            ->where('type','withdraw')
+            ->sum('amount');
+
+        // ✅ سود خالص واقعی امروز
+        $todayProfit = $salesProfit - $todayExpenses - $todayWithdraw;
+
+        $totalStock = Product::sum('quantity');
+        $totalEmployees = Employee::count();
+
+        return view('backend.index', compact(
+            'todaySales',
+            'todaySalesCount',
+            'todayProfit',
+            'todayExpenses',
+            'todayWithdraw',
+            'todayExpensesCount', // 👈 اینو اضافه کن
+            'totalStock',
+            'totalEmployees'
+        ));
+    }
+
+    // Employee
     public function AllEmployee(){
         $employee = Employee::latest()->get();
         return view('backend.pages.employee.index', compact('employee'));

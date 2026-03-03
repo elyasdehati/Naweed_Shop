@@ -45,7 +45,7 @@
                                                     <div class="card-header">
                                                         <div class="row align-items-center">
                                                             <div class="col">                      
-                                                                <h4 class="card-title mb-0">Personal Information</h4>                      
+                                                                <h4 class="card-title mb-0">اطلاعات کاربر</h4>                      
                                                             </div><!--end col-->                                                       
                                                         </div>
                                                     </div>
@@ -111,38 +111,48 @@
                                                     <div class="card-header">
                                                         <div class="row align-items-center">
                                                             <div class="col">                      
-                                                                <h4 class="card-title mb-0">Change Password</h4>                      
+                                                                <h4 class="card-title mb-0">تغییر رمز</h4>                      
                                                             </div><!--end col-->                                                       
                                                         </div>
                                                     </div>
 
                                                     <div class="card-body mb-0">
+                                                        <form action="{{ route('admin.password.update') }}" method="post" enctype="multipart/form-data">
+                                                            @csrf
                                                         <div class="form-group mb-3 row">
-                                                            <label class="form-label">Old Password</label>
+                                                            <label class="form-label">رمز قبلی</label>
                                                             <div class="col-lg-12 col-xl-12">
-                                                                <input class="form-control" type="password" placeholder="Old Password">
+                                                                <input class="form-control @error('old_password') is-invalid
+                                                                @enderror" name="old_password" id="old_password" type="password" placeholder="رمز قبلی را وارد کنید">
+                                                                @error('old_password')
+                                                                    <span class="text-danger">{{ $message }}</span>
+                                                                @enderror
                                                             </div>
                                                         </div>
                                                         <div class="form-group mb-3 row">
-                                                            <label class="form-label">New Password</label>
+                                                            <label class="form-label">رمز جدید</label>
                                                             <div class="col-lg-12 col-xl-12">
-                                                                <input class="form-control" type="password" placeholder="New Password">
+                                                                <input class="form-control @error('new_password') is-invalid
+                                                                @enderror" name="new_password" id="new_password" type="password" placeholder="رمز جدید تان را وارد کنید">
+                                                                @error('new_password')
+                                                                    <span class="text-danger">{{ $message }}</span>
+                                                                @enderror
                                                             </div>
                                                         </div>
                                                         <div class="form-group mb-3 row">
-                                                            <label class="form-label">Confirm Password</label>
+                                                            <label class="form-label">تایید رمز</label>
                                                             <div class="col-lg-12 col-xl-12">
-                                                                <input class="form-control" type="password" placeholder="Confirm Password">
+                                                                <input class="form-control" name="new_password_confirmation" id="new_password_confirmation" type="password" placeholder="رمز جدید را دوباره وارد کنید">
                                                             </div>
                                                         </div>
 
                                                         <div class="form-group row">
                                                             <div class="col-lg-12 col-xl-12">
-                                                                <button type="submit" class="btn btn-primary">Change Password</button>
-                                                                <button type="button" class="btn btn-danger">Cancel</button>
+                                                                <button type="submit" class="btn btn-primary">تغییر رمز</button>
+                                                                <button type="button" class="btn btn-danger">لغو</button>
                                                             </div>
                                                         </div>
-
+                                                        </form>
                                                     </div><!--end card-body-->
                                                 </div>
                                             </div>

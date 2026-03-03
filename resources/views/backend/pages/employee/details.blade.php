@@ -6,23 +6,6 @@
 
         <div class="row">
 
-            <!-- Right Side - Employee Image -->
-            <div class="col-md-4 my-auto">
-                <div class="card">
-                    <div class="card-body text-center">
-
-                        @if($emp->photo)
-                            <img src="{{ asset($emp->photo) }}" 
-                                 class="img-fluid rounded" 
-                                 style="max-height:350px; object-fit:cover;">
-                        @else
-                            <p>عکس موجود نیست</p>
-                        @endif
-
-                    </div>
-                </div>
-            </div>
-
             <!-- Left Side - Employee Info -->
             <div class="col-md-8">
                 <div class="card">
@@ -67,6 +50,24 @@
                         <a href="{{ route('all.employee') }}" class="btn btn-secondary mt-3">
                             بازگشت
                         </a>
+
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Right Side - Employee Image -->
+            <div class="col-md-4 my-auto">
+                <div class="card">
+                    <div class="card-body text-center">
+
+                        @if($emp->photo)
+                            <img src="{{ asset($emp->photo) }}" 
+                                 class="img-fluid rounded" 
+                                 style="max-height:350px; object-fit:cover;">
+                        @else
+                            <p>عکس موجود نیست</p>
+                        @endif
 
                     </div>
                 </div>

@@ -10,9 +10,9 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-Route::get('/dashboard', function () {
-    return view('backend.index');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [BackendController::class, 'Dashboard'])
+    ->middleware(['auth','verified'])
+    ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -23,6 +23,7 @@ Route::middleware('auth')->group(function () {
     Route::controller(BackendController::class)->group(function () {
         Route::get('/admin/profile','AdminProfile')->name('admin.profile');
         Route::post('/profile/store','ProfileStore')->name('profile.store');
+        Route::post('/admin/password/update','AdminPasswordUpdate')->name('admin.password.update');
     });
 
     //  Employee

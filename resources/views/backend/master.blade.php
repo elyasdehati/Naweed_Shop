@@ -16,8 +16,12 @@
         <!-- App css -->
         <link href="{{ asset('backend/assets/css/app-rtl.min.css') }}" rel="stylesheet" type="text/css" id="app-style" />
 
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+
         <!-- Icons -->
         <link href="{{ asset('backend/assets/css/icons-rtl.min.css') }}" rel="stylesheet" type="text/css" />
+
+        
 
     </head>
 
@@ -78,7 +82,7 @@
         <!-- App js-->
         <script src="{{ asset('backend/assets/js/app.js') }}"></script>
 
-        <script src="{{ asset('backend/assets/libs/jquery/jquery.min.js') }}"></script>
+        {{-- <script src="{{ asset('backend/assets/libs/jquery/jquery.min.js') }}"></script> --}}
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 
         {{-- alerts --}}
@@ -127,6 +131,23 @@ $(document).on('click', '.delete-confirm', function(e){
             window.location.href = link;
         }
     });
+});
+</script>
+
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+$(document).ready(function() {
+
+    var table = $('#datatable').DataTable({
+        dom: '<"row mb-3"<"col-md-6"f><"col-md-6 text-end"l>>rtip',
+        language: {
+            search: "",
+            searchPlaceholder: "جستجو..."
+        }
+    });
+
 });
 </script>
 

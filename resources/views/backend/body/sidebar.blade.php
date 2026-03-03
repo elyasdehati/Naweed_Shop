@@ -19,15 +19,14 @@
                     </span>
                 </a>
             </div>
+            <hr>
 
             <ul id="side-menu">
-
-                <li class="menu-title">Menu</li>
 
                 <li>
                     <a href="{{ route('dashboard') }}">
                         <i data-feather="home"></i>
-                        <span> Dashboard </span>
+                        <span> خانه </span>
                     </a>
                 </li>
     
@@ -37,8 +36,6 @@
                         <span> Landing </span>
                     </a>
                 </li> -->
-
-                <li class="menu-title">Pages</li>
 
                 <li>
                     <a href="#sidebarAuth" data-bs-toggle="collapse">

@@ -49,9 +49,10 @@
                                     <td>{{ number_format($item->total_amount,2) }}</td>
                                     <td>
                                         <a href="{{ route('all.expenses.invoice', [
-                                            'employee_id' => $item->employee_id ?: 0,
-                                            'date' => $item->last_date
-                                        ]) }}" class="btn btn-success btn-sm">
+                                                'employee_id' => $item->employee_id ?: 0,
+                                                'month' => request('month')  // این اضافه شد
+                                            ]) }}" 
+                                            class="btn btn-success btn-sm">
                                             مشاهده مصارف
                                         </a>
                                     </td>
@@ -138,6 +139,10 @@
                             <div class="d-flex justify-content-between mb-2">
                                 <span class="text-muted">مجموع مصارفات:</span>
                                 <strong>{{ number_format($dailyExpensesTotal,2) }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">مجموع مفاد فروش‌ها: </span>
+                                <strong>{{ number_format($salesProfitTotal,2) }}</strong>
                             </div>
                             <hr>
                             <div class="d-flex justify-content-between mb-2">
