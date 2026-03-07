@@ -82,6 +82,16 @@ Route::middleware('auth')->group(function () {
         Route::get('/delete/expenses/{id}', 'DeleteExpenses')->name('delete.expenses');
     });
 
+    //  Sponsers
+    Route::controller(BackendController::class)->group(function () {
+        Route::get('all/sponsers', 'AllSponsers')->name('all.sponsers');
+        Route::get('add/sponser', 'AddSponser')->name('add.sponser');
+        Route::post('/store/sponser', 'StoreSponser')->name('store.sponser');
+        Route::get('/edit/sponser/{id}', 'EditSponser')->name('edit.sponser');
+        Route::post('/update/sponser/{id}','UpdateSponser')->name('update.sponser');
+        Route::get('/delete/sponser/{id}', 'DeleteSponser')->name('delete.sponser');
+    });
+
     // Expense Reports
     Route::controller(ReportsController::class)->group(function() {
         Route::get('all/expenses/reports' , 'AllExpensesReport')->name('all.expenses.report');
@@ -98,6 +108,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/all/reports/invoice/{employee_id?}', 'AllReportsInvoice')->name('all.reports.invoice');
         Route::post('/search/reports/bymonth', 'AllReportsByMonth')->name('search.reports.by.month');
         Route::post('/search/reports/year', 'AllReportsByYear')->name('search.reports.by.year');
+
+        Route::get('/all/sponsors/invoice', 'AllSponsorsInvoice')->name('all.sponsors.invoice');
+        Route::get('/all/sales/invoice', 'AllSalesInvoice')->name('all.sales.invoice');
     });
 });
     Route::get('/admin/logout', [BackendController::class, 'AdminLogout'])->name('admin.logout');

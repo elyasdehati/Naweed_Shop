@@ -7,7 +7,9 @@ use App\Models\Employee;
 use App\Models\Expense;
 use App\Models\Product;
 use App\Models\Sale;
+use App\Models\Sponser;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -255,8 +257,62 @@ class BackendController extends Controller
     }
 
     public function DetailsEmployee($id){
-        $emp = Employee::find($id);
-        return view('backend.pages.employee.details', compact('emp'));
+        $emp = Employee::with(['sales','expenses'])->findOrFail($id);
+
+        $currentMonth = Carbon::now()->month;
+        $currentYear  = Carbon::now()->year;
+
+       $pending = $emp->sales()
+            ->whereMonth('date', $currentMonth)
+            ->whereYear('date', $currentYear)
+            ->where('status','pending')
+            ->count();
+
+        $completed = $emp->sales()
+            ->whereMonth('date', $currentMonth)
+            ->whereYear('date', $currentYear)
+            ->where('status','completed')
+            ->count();
+
+        $cancelled = $emp->sales()
+            ->whereMonth('date', $currentMonth)
+            ->whereYear('date', $currentYear)
+            ->where('status','cancelled')
+            ->count();
+
+        $profit = $emp->sales()
+            ->whereMonth('date', $currentMonth)
+            ->whereYear('date', $currentYear)
+            ->sum('profit');
+
+        $employeeCharges = $emp->expenses()
+            ->where('type','employee')
+            ->whereMonth('date', $currentMonth)
+            ->whereYear('date', $currentYear)
+            ->sum('amount');
+
+        // Withdraw
+        $withdraw = $emp->expenses()
+            ->where('type','withdraw')
+            ->whereMonth('date', $currentMonth)
+            ->whereYear('date', $currentYear)
+            ->sum('amount');
+
+        $sponsor = $emp->sponsers()
+            ->whereMonth('date', $currentMonth)
+            ->whereYear('date', $currentYear)
+            ->sum('amount');
+
+        return view('backend.pages.employee.details', compact(
+            'emp',
+            'pending',
+            'completed',
+            'cancelled',
+            'profit',
+            'withdraw',
+            'sponsor',
+            'employeeCharges'
+        ));
     }
 
     public function DeleteEmployee($id) {
@@ -541,6 +597,7 @@ class BackendController extends Controller
         'province' => $request->province,
         'status' => $request->status,
         'date' => $request->date,
+        'bill' => $request->bill,
         'profit' => $profit,
         'total' => $total,
     ]);
@@ -623,10 +680,11 @@ class BackendController extends Controller
         'quantity' => $request->quantity,
         'buy_price' => $product->price,
         'sale_price' => $request->sale_price,
-        'charges' => $charges, // <<< تغییر اعمال شد
+        'charges' => $charges, 
         'province' => $request->province,
         'status' => $request->status,
         'date' => $request->date,
+        'bill' => $request->bill,
         'profit' => $profit,
         'total' => $total,
     ]);
@@ -658,7 +716,6 @@ class BackendController extends Controller
         return redirect()->route('all.sales')->with($notification);
     }
 
-    // گرفتن فروش‌های pending
     public function PendingNotifications(){
         $sales = Sale::with('employee','product')
                     ->where('status','pending')
@@ -788,6 +845,93 @@ class BackendController extends Controller
         $expense->delete();
 
         return redirect()->back()->with('success', 'مصرف با موفقیت حذف شد.');
+    }
+
+     // --------------  Expenses -----------------
+    public function AllSponsers(){
+        $sponser = Sponser::latest()->get();
+        return view('backend.pages.sponsers.index', compact('sponser'));
+    }
+
+    public function AddSponser(){
+        $employees = Employee::all();
+        $products = Product::all();
+        return view('backend.pages.sponsers.add',compact('employees','products'));
+    }
+
+    public function StoreSponser(Request $request){
+        $request->merge([
+            'amount' => str_replace(
+                ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'],
+                ['0','1','2','3','4','5','6','7','8','9'],
+                $request->amount
+            ),
+        ]);
+
+        $request->validate([
+            'employee_id' => 'nullable|exists:employees,id',
+            'product_id' => 'nullable|exists:products,id',
+            'amount' => 'required|numeric',
+            'date' => 'required|date',
+        ]);
+
+        Sponser::create([
+            'employee_id' => $request->employee_id,
+            'product_id' => $request->product_id,
+            'amount' => $request->amount,
+            'date' => $request->date,
+        ]);
+
+        $notification = array(
+            'message' => 'اسپانسر موفقانه اضافه شد',
+            'alert-type' => 'success'
+        );
+        return redirect()->route('all.sponsers')->with($notification);
+    }
+
+    public function EditSponser($id){
+        $sponser = Sponser::findOrFail($id);
+        $employees = Employee::all();
+        $products = Product::all();
+
+        return view('backend.pages.sponsers.edit', compact('sponser','employees','products'));
+    }
+    
+    public function UpdateSponser(Request $request,$id){
+        $numbers = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+        $english = ['0','1','2','3','4','5','6','7','8','9'];
+
+        $request->merge([
+            'amount' => str_replace($numbers, $english, $request->amount),
+        ]);
+
+        $request->validate([
+            'employee_id' => 'nullable|exists:employees,id',
+            'product_id' => 'nullable|exists:products,id',
+            'amount' => 'required|numeric',
+            'date' => 'required|date',
+        ]);
+
+        $sponser = Sponser::findOrFail($id);
+
+        $sponser->update([
+            'employee_id' => $request->employee_id,
+            'product_id' => $request->product_id,
+            'amount' => $request->amount,
+            'date' => $request->date,
+        ]);
+        $notification = array(
+            'message' => 'اسپانسر موفقانه بروزرسانی شد',
+            'alert-type' => 'success'
+        );
+        return redirect()->route('all.sponsers')->with($notification);
+    }
+
+    public function DeleteSponser($id){
+        $sponser = Sponser::findOrFail($id);
+        $sponser->delete();
+
+        return redirect()->back()->with('success', 'اسپانسر با موفقیت حذف شد.');
     }
 
 }

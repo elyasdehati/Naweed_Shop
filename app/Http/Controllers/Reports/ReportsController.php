@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Reports;
 
 use App\Http\Controllers\Controller;
+use App\Models\Employee;
 use App\Models\Expense;
 use App\Models\Sale;
+use App\Models\Sponser;
 use Illuminate\Http\Request;
 
 class ReportsController extends Controller
@@ -142,7 +144,6 @@ class ReportsController extends Controller
 
         $date = $request->date;
 
-        // Expenses
         $allExpenses = Expense::with('employee')->whereDate('date', $date)->get();
         $dailyExpenses = $allExpenses
             ->groupBy(fn($item) => $item->employee_id ?? 0)
@@ -159,30 +160,74 @@ class ReportsController extends Controller
             });
         $dailyExpensesTotal = $allExpenses->sum('amount');
 
-        // Sales
+        // ----------------- Sales -----------------
         $sales = Sale::with(['employee','product','category'])
-            ->where('status','completed')
-            ->whereDate('created_at', $date)
+            ->whereIn('status',['completed','pending','cancelled']) // اضافه شد
+            ->whereDate('date', $date)
             ->get();
 
-        $salesTotal = $sales->sum('total');
+        $dailySales = $sales
+            ->groupBy(fn($item) => $item->employee_id ?? 0)
+            ->map(function($group){
+                $first = $group->first();
 
-        // **تغییر: استفاده مستقیم از profit ذخیره شده**
-        $salesProfitTotal = $sales->sum('profit');
-        $salesLossTotal = $salesTotal - $salesProfitTotal;
+                // اضافه شد
+                $completed = $group->where('status','completed');
 
-        // Final Amount = سود واقعی فروش - مصارف
-        $finalAmount = $salesProfitTotal - $dailyExpensesTotal;
+                return (object)[
+                    'employee' => $first->employee ?? null,
+
+                    // فقط completed
+                    'total_quantity' => $completed->sum('quantity'),
+
+                    // فقط completed
+                    'total_sales' => $completed->sum(fn($item) => $item->sale_price * $item->quantity),
+
+                    // همه status ها
+                    'total_charges' => $group->sum('charges'),
+
+                    // اضافه شد
+                    'profit' => $completed->sum(fn($item) =>
+                        ($item->sale_price * $item->quantity) -
+                        ($item->buy_price * $item->quantity)
+                    ),
+
+                    'all_sales' => $group,
+                ];
+            });
+
+        // ----------------- Sponsors -----------------
+        $sponsors = Sponser::with('employee','product')->whereDate('date', $date)->get();
+        $sponsorsTotal = $sponsors->sum('amount');
+        $sponsors = $sponsors
+            ->groupBy(fn($item) => $item->employee_id ?? 0)
+            ->map(function($group){
+                $first = $group->first();
+                return (object)[
+                    'employee' => $first->employee ?? null,
+                    'product' => $first->product ?? null,
+                    'amount' => $group->sum('amount'),
+                    'sponsor_quantity' => $group->count(),
+                    'date' => $group->max('date'),
+                ];
+            });
+
+        // ----------------- Calculations -----------------
+        $salesProfitTotal = $sales->where('status','completed') // اضافه شد
+            ->sum(fn($s) => ($s->sale_price * $s->quantity) - ($s->buy_price * $s->quantity) - ($s->charges ?? 0));
+
+        $finalAmount = $salesProfitTotal - $sponsorsTotal - $dailyExpensesTotal;
 
         return view('backend.pages.reports.all_reports.search_by_date', compact(
-            'dailyExpenses', 
-            'dailyExpensesTotal', 
-            'sales', 
-            'salesTotal', 
-            'salesProfitTotal', 
-            'salesLossTotal', 
-            'finalAmount', 
-            'date'
+            'dailyExpenses',
+            'dailyExpensesTotal',
+            'sales',
+            'dailySales',
+            'salesProfitTotal',
+            'finalAmount',
+            'date',
+            'sponsors',
+            'sponsorsTotal'
         ));
     }
 
@@ -193,7 +238,7 @@ class ReportsController extends Controller
 
         $month = $request->month;
 
-        // Expenses
+        // ----------------- Expenses -----------------
         $allExpenses = Expense::with('employee')->whereMonth('date', $month)->get();
         $dailyExpenses = $allExpenses
             ->groupBy(fn($item) => $item->employee_id ?? 0)
@@ -210,22 +255,52 @@ class ReportsController extends Controller
             });
         $dailyExpensesTotal = $allExpenses->sum('amount');
 
-        // Sales
+        // ----------------- Sales -----------------
         $sales = Sale::with(['employee','product','category'])
-            ->where('status','completed')
-            ->whereMonth('created_at', $month)
+            ->whereIn('status',['completed','pending','cancelled'])
+            ->whereMonth('date', $month)
             ->get();
-        $salesTotal = $sales->sum('total');
 
-        // Sales profit & loss
-        $salesProfitTotal = $sales->sum('profit');
-        $salesLossTotal = $salesTotal - $salesProfitTotal;
+        $dailySales = $sales
+            ->groupBy(fn($item) => $item->employee_id ?? 0)
+            ->map(function($group){
+                $first = $group->first();
+                $completed = $group->where('status','completed');
+                return (object)[
+                    'employee' => $first->employee ?? null,
+                    'total_quantity' => $completed->sum('quantity'),
+                    'total_sales' => $completed->sum(fn($item) => $item->sale_price * $item->quantity),
+                    'total_charges' => $group->sum('charges'),
+                    'profit' => $completed->sum(fn($item) => ($item->sale_price * $item->quantity) - ($item->buy_price * $item->quantity)),
+                    'all_sales' => $group,
+                    'employee_id' => $first->employee_id ?? 0,
+                ];
+            });
 
-        // Final Amount = Sales profit - Expenses
-        $finalAmount = $salesProfitTotal - $dailyExpensesTotal;
+        // ----------------- Sponsors -----------------
+        $sponsors = Sponser::with('employee','product')->whereMonth('date', $month)->get();
+        $sponsorsTotal = $sponsors->sum('amount');
+        $sponsors = $sponsors
+            ->groupBy(fn($item) => $item->employee_id ?? 0)
+            ->map(function($group){
+                $first = $group->first();
+                return (object)[
+                    'employee' => $first->employee ?? null,
+                    'product' => $first->product ?? null,
+                    'amount' => $group->sum('amount'),
+                    'sponsor_quantity' => $group->count(),
+                    'date' => $group->max('date'),
+                ];
+            });
+
+        // ----------------- Calculations -----------------
+        // اصلاح: محاسبه سود واقعی بدون دوبار کم کردن charges
+        $salesProfitTotal = $dailySales->sum(fn($s) => $s->profit - $s->total_charges);
+
+        $finalAmount = $salesProfitTotal - $sponsorsTotal - $dailyExpensesTotal;
 
         return view('backend.pages.reports.all_reports.search_by_month', compact(
-            'dailyExpenses', 'dailyExpensesTotal', 'sales', 'salesTotal', 'salesProfitTotal', 'salesLossTotal', 'finalAmount', 'month'
+            'dailyExpenses','dailyExpensesTotal','sales','dailySales','salesProfitTotal','finalAmount','month','sponsors','sponsorsTotal'
         ));
     }
 
@@ -236,11 +311,8 @@ class ReportsController extends Controller
 
         $year = $request->year;
 
-        // Expenses
-        $allExpenses = Expense::with('employee')
-            ->whereYear('date', $year)
-            ->get();
-
+        // ----------------- Expenses -----------------
+        $allExpenses = Expense::with('employee')->whereYear('date', $year)->get();
         $dailyExpenses = $allExpenses
             ->groupBy(fn($item) => $item->employee_id ?? 0)
             ->map(function($group){
@@ -254,26 +326,103 @@ class ReportsController extends Controller
                     'all_expenses' => $group,
                 ];
             });
-
         $dailyExpensesTotal = $allExpenses->sum('amount');
 
-        // Sales
+        // ----------------- Sales -----------------
         $sales = Sale::with(['employee','product','category'])
-            ->where('status','completed')
-            ->whereYear('created_at', $year)
+            ->whereIn('status',['completed','pending','cancelled'])
+            ->whereYear('date', $year)
             ->get();
 
-        $salesTotal = $sales->sum('total');
+        $dailySales = $sales
+            ->groupBy(fn($item) => $item->employee_id ?? 0)
+            ->map(function($group){
+                $first = $group->first();
+                $completed = $group->where('status','completed');
+                return (object)[
+                    'employee' => $first->employee ?? null,
+                    'total_quantity' => $completed->sum('quantity'),
+                    'total_sales' => $completed->sum(fn($item) => $item->sale_price * $item->quantity),
+                    'total_charges' => $group->sum('charges'),
+                    'profit' => $completed->sum(fn($item) => ($item->sale_price * $item->quantity) - ($item->buy_price * $item->quantity)),
+                    'all_sales' => $group,
+                    'employee_id' => $first->employee_id ?? 0,
+                ];
+            });
 
-        // **تغییر: استفاده مستقیم از profit ذخیره شده**
-        $salesProfitTotal = $sales->sum('profit');
-        $salesLossTotal = $salesTotal - $salesProfitTotal;
+        // ----------------- Sponsors -----------------
+        $sponsors = Sponser::with('employee','product')->whereYear('date', $year)->get();
+        $sponsorsTotal = $sponsors->sum('amount');
+        $sponsors = $sponsors
+            ->groupBy(fn($item) => $item->employee_id ?? 0)
+            ->map(function($group){
+                $first = $group->first();
+                return (object)[
+                    'employee' => $first->employee ?? null,
+                    'product' => $first->product ?? null,
+                    'amount' => $group->sum('amount'),
+                    'sponsor_quantity' => $group->count(),
+                    'date' => $group->max('date'),
+                ];
+            });
 
-        // Final Amount = Sales profit - Expenses
-        $finalAmount = $salesProfitTotal - $dailyExpensesTotal;
+        // ----------------- Calculations -----------------
+        // NEW: Calculate real profit like the tables do
+        $salesProfitTotal = $dailySales->sum(fn($s) => $s->profit - $s->total_charges);
+
+        // Final amount
+        $finalAmount = $salesProfitTotal - $sponsorsTotal - $dailyExpensesTotal;
 
         return view('backend.pages.reports.all_reports.search_by_year', compact(
-            'dailyExpenses', 'dailyExpensesTotal', 'sales', 'salesTotal', 'salesProfitTotal', 'salesLossTotal', 'finalAmount', 'year'
+            'dailyExpenses','dailyExpensesTotal','sales','dailySales','salesProfitTotal','finalAmount','year','sponsors','sponsorsTotal'
+        ));
+    }
+
+    public function AllSponsorsInvoice(Request $request){
+        $employee_id = $request->employee_id;
+        $month = $request->month;
+        $date = $request->date;
+
+        $sponsors = Sponser::with('employee','product')
+            ->where('employee_id',$employee_id)
+            ->when($date, fn($q) => $q->whereDate('date', $date)) 
+            ->when($month, fn($q) => $q->whereMonth('date',$month))
+            ->get();
+
+        return view('backend.pages.reports.sponsers.invoice', compact('sponsors'));
+    }
+
+    public function AllSalesInvoice(Request $request){
+        $employee_id = $request->employee_id;
+        $date = $request->date;
+        $month = $request->month;
+        $year = $request->year; 
+
+        // همه فروش‌ها: completed, pending, cancelled
+        $sales = Sale::with(['employee','product','category'])
+            ->where('employee_id', $employee_id)
+            ->when($date, fn($query) => $query->whereDate('date', $date))
+            ->when($month, fn($query) => $query->whereMonth('date', $month))
+            ->when($year, fn($query) => $query->whereYear('date', $year)) 
+            ->get();
+
+        // جمع charges از pending و cancelled
+        $pendingCharges = $sales->where('status','pending')->sum('charges');
+        $cancelledCharges = $sales->where('status','cancelled')->sum('charges');
+
+        // فقط completed برای محاسبه سود و فروش واقعی
+        $completedSales = $sales->where('status','completed');
+        $total_sales = $completedSales->sum(fn($s) => $s->sale_price * $s->quantity);
+        $total_quantity = $completedSales->sum('quantity');
+        $total_profit = $completedSales->sum(fn($s) => ($s->sale_price * $s->quantity) - ($s->buy_price * $s->quantity) - ($s->charges ?? 0));
+
+        // سود خالص = سود واقعی completed - charges pending - charges cancelled
+        $total_final = $total_profit - $pendingCharges - $cancelledCharges;
+
+        $employee = Employee::find($employee_id);
+
+        return view('backend.pages.reports.sales_invoice.invoice', compact(
+            'sales','employee','date','month','total_sales','total_quantity','total_profit','pendingCharges','cancelledCharges','total_final'
         ));
     }
 }

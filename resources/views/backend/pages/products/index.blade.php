@@ -28,50 +28,52 @@
                                     </div><!-- end card header -->
 
             <div class="card-body">
-                <table id="datatable" class="table table-bordered dt-responsive table-responsive nowrap">
-                    <thead>
-                    <tr>
-                        <th class="text-center">#</th>
-                        <th class="text-center">دسته بندی</th>
-                        <th class="text-center">نام محصول</th>
-                        <th class="text-center">مقدار اجناس</th>
-                        <th class="text-center">قیمت خرید</th>
-                        <th class="text-center">کد</th>
-                        <th class="text-center">نوت</th>
-                        <th class="text-center">عکس</th>
-                        <th class="text-center">عملیات</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($product as $key=> $item)
-                            <tr>
-                                <td class="text-center">{{ $key+1 }}</td>
-                                <td class="text-center">{{ $item->category ? $item->category->name : '-' }}</td>
-                                <td class="text-center">{{ $item->name }}</td>
-                                {{-- <td class="text-center">{{ $item->quantity }}</td> --}}
-                                <td class="text-center">
-                                    @if ($item->quantity <= 5)
-                                        <span class="badge text-bg-danger">{{ $item->quantity }}</span>
-                                        @else
-                                        <h4>
-                                            <span class="badge text-bg-secondary">{{ $item->quantity }}</span>
-                                        </h4>
-                                    @endif
-                                </td>
-                                <td class="text-center">{{ $item->price }}</td>
-                                <td class="text-center">{{ $item->code }}</td>
-                                <td class="text-center">{{ $item->note }}</td>
-                                <td class="text-center"> 
-                                    <img src="{{ asset($item->image) }}" alt="" width="40" height="40" >
-                                </td>
-                                <td class="text-center">
-                                    <a href="{{ route('edit.products', $item->id) }}" class="btn btn-success btn-sm">ویرایش</a>
-                                    <a href="{{ route('delete.products', $item->id) }}" id="delete" class="btn btn-danger btn-sm delete-confirm">حذف</a>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table id="datatable" class="table table-bordered align-middle text-nowrap w-100">
+                        <thead>
+                        <tr>
+                            <th class="text-center">#</th>
+                            <th class="text-center">دسته بندی</th>
+                            <th class="text-center">نام محصول</th>
+                            <th class="text-center">مقدار اجناس</th>
+                            <th class="text-center">قیمت خرید</th>
+                            <th class="text-center">کد</th>
+                            <th class="text-center">نوت</th>
+                            <th class="text-center">عکس</th>
+                            <th class="text-center">عملیات</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($product as $key=> $item)
+                                <tr>
+                                    <td class="text-center">{{ $key+1 }}</td>
+                                    <td class="text-center">{{ $item->category ? $item->category->name : '-' }}</td>
+                                    <td class="text-center">{{ $item->name }}</td>
+                                    {{-- <td class="text-center">{{ $item->quantity }}</td> --}}
+                                    <td class="text-center">
+                                        @if ($item->quantity <= 5)
+                                            <span class="badge text-bg-danger">{{ $item->quantity }}</span>
+                                            @else
+                                            <h4>
+                                                <span class="badge text-bg-secondary">{{ $item->quantity }}</span>
+                                            </h4>
+                                        @endif
+                                    </td>
+                                    <td class="text-center">{{ $item->price }}</td>
+                                    <td class="text-center">{{ $item->code }}</td>
+                                    <td class="text-center">{{ $item->note }}</td>
+                                    <td class="text-center"> 
+                                        <img src="{{ asset($item->image) }}" alt="" width="40" height="40" >
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="{{ route('edit.products', $item->id) }}" class="btn btn-success btn-sm">ویرایش</a>
+                                        <a href="{{ route('delete.products', $item->id) }}" id="delete" class="btn btn-danger btn-sm delete-confirm">حذف</a>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
                                 </div>

@@ -82,6 +82,11 @@
                                     <input type="text" class="form-control" name="province"> 
                                 </div>
 
+                                <div class="form-group col-md-4"> 
+                                    <label for="bill" class="form-label">نمبر بل :</label> 
+                                    <input type="text" class="form-control" name="bill"> 
+                                </div>
+
                                 <div class="form-group col-md-4">
                                     <label class="form-label">تاریخ:</label>
                                     <input type="date" name="date" class="form-control">

@@ -96,6 +96,11 @@
                                 <input type="text" class="form-control" name="province" value="{{ $sale->province }}"> 
                             </div>
 
+                            <div class="form-group col-md-4"> 
+                                <label for="bill" class="form-label">نمبر بل :</label> 
+                                <input type="text" class="form-control" name="bill" value="{{ $sale->bill }}"> 
+                            </div>
+
                             <div class="form-group col-md-4">
                                 <label class="form-label">تاریخ:</label>
                                 <input type="date" name="date" class="form-control" value="{{ $sale->date }}">

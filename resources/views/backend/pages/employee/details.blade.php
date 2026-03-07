@@ -47,6 +47,45 @@
                             </tr>
                         </table>
 
+                        <h5 class="mb-3">گزارش ماه جاری</h5>
+
+                        <table class="table table-bordered">
+                            <tr>
+                                <th>فروش در حال انتظار</th>
+                                <td>{{ number_format($pending) }}</td>
+                            </tr>
+
+                            <tr>
+                                <th>فروش تکمیل شده</th>
+                                <td>{{ number_format($completed) }}</td>
+                            </tr>
+
+                            <tr>
+                                <th>فروش لغو شده</th>
+                                <td>{{ number_format($cancelled) }}</td>
+                            </tr>
+
+                            <tr>
+                                <th>سود </th>
+                                <td>{{ number_format($profit) }}</td>
+                            </tr>
+
+                            <tr>
+                                <th>مصارف کارمند</th>
+                                <td>{{ number_format($employeeCharges) }}</td>
+                            </tr>
+
+                            <tr>
+                                <th>برداشت ها</th>
+                                <td>{{ number_format($withdraw) }}</td>
+                            </tr>
+
+                            <tr>
+                                <th>اسپانسر</th>
+                                <td>{{ number_format($sponsor) }}</td>
+                            </tr>
+                        </table>
+
                         <a href="{{ route('all.employee') }}" class="btn btn-secondary mt-3">
                             بازگشت
                         </a>

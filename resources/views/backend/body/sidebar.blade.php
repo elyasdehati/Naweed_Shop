@@ -122,7 +122,7 @@
                             </li>
 
                             <li>
-                                <a href="{{ route('add.expenses') }}" class="tp-link">افزودن مصرف</a>
+                                <a href="{{ route('all.sponsers') }}" class="tp-link">لیست اسپانسر ها</a>
                             </li>
                         </ul>
                     </div>
@@ -138,9 +138,9 @@
                     </a>
                     <div class="collapse" id="reports">
                         <ul class="nav-second-level">
-                            <li>
+                            {{-- <li>
                                 <a href="{{ route('all.expenses.report') }}" class="tp-link">گذارش مصارفات</a>
-                            </li>
+                            </li> --}}
                             <li>
                                 <a href="{{ route('all.report') }}" class="tp-link">گذارشات عمومی</a>
                             </li>                          
