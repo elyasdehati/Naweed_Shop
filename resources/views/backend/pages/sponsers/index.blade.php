@@ -7,12 +7,12 @@
 
         <div class="py-3 d-flex align-items-sm-center flex-sm-row flex-column">
             <div class="flex-grow-1">
-                <h4 class="fs-18 fw-semibold m-0">لیست مصارف</h4>
+                <h4 class="fs-18 fw-semibold m-0">لیست اسپانسر ها</h4>
             </div>
 
             <div class="text-end">
                 <a href="{{ route('add.sponser') }}" class="btn btn-secondary">
-                    افزودن مصرف جدید
+                    افزودن اسپانسر جدید
                 </a>
             </div>
         </div>
@@ -30,8 +30,8 @@
                                     <tr>
                                         <th class="text-center">#</th>
                                         <th class="text-center">کارمند</th>
-                                        <th class="text-center">قیمت</th>
                                         <th class="text-center">محصول</th>
+                                        <th class="text-center">قیمت</th>
                                         <th class="text-center">تاریخ</th>
                                         <th class="text-center">عملیات</th>
                                     </tr>

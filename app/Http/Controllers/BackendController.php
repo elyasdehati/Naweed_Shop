@@ -257,51 +257,64 @@ class BackendController extends Controller
     }
 
     public function DetailsEmployee($id){
-        $emp = Employee::with(['sales','expenses'])->findOrFail($id);
+        $emp = Employee::with(['sales','expenses','sponsers'])->findOrFail($id);
 
         $currentMonth = Carbon::now()->month;
-        $currentYear  = Carbon::now()->year;
 
        $pending = $emp->sales()
             ->whereMonth('date', $currentMonth)
-            ->whereYear('date', $currentYear)
             ->where('status','pending')
             ->count();
 
         $completed = $emp->sales()
             ->whereMonth('date', $currentMonth)
-            ->whereYear('date', $currentYear)
             ->where('status','completed')
             ->count();
 
         $cancelled = $emp->sales()
             ->whereMonth('date', $currentMonth)
-            ->whereYear('date', $currentYear)
             ->where('status','cancelled')
             ->count();
 
-        $profit = $emp->sales()
-            ->whereMonth('date', $currentMonth)
-            ->whereYear('date', $currentYear)
-            ->sum('profit');
+        $allSales = $emp->sales()
+            ->whereMonth('date', $currentMonth) 
+            ->get();
+
+        $completedSales = $allSales->where('status','completed');
+        $pendingCharges = $allSales->where('status','pending')->sum('charges');
+        $cancelledCharges = $allSales->where('status','cancelled')->sum('charges');
+
+        $profit = $completedSales->sum(fn($s) => ($s->sale_price * $s->quantity) - ($s->buy_price * $s->quantity) - ($s->charges ?? 0));
+        $profit = $profit - $pendingCharges - $cancelledCharges;
 
         $employeeCharges = $emp->expenses()
             ->where('type','employee')
             ->whereMonth('date', $currentMonth)
-            ->whereYear('date', $currentYear)
             ->sum('amount');
 
-        // Withdraw
         $withdraw = $emp->expenses()
             ->where('type','withdraw')
             ->whereMonth('date', $currentMonth)
-            ->whereYear('date', $currentYear)
             ->sum('amount');
 
         $sponsor = $emp->sponsers()
             ->whereMonth('date', $currentMonth)
-            ->whereYear('date', $currentYear)
             ->sum('amount');
+
+        // -------------------- Expenses ADDED --------------------
+        $expenses = $emp->expenses()
+            ->whereMonth('date', $currentMonth)
+            ->get();
+
+        $expensesTotal = $expenses->sum('amount');
+
+        // -------------------- ADDED SPONSOR --------------------
+        $sponsors = $emp->sponsers()
+            ->whereMonth('date', $currentMonth)
+            ->with('product')
+            ->get();
+
+        $sponsorTotal = $sponsors->sum('amount');
 
         return view('backend.pages.employee.details', compact(
             'emp',
@@ -311,7 +324,15 @@ class BackendController extends Controller
             'profit',
             'withdraw',
             'sponsor',
-            'employeeCharges'
+            'employeeCharges',
+            'allSales',
+            'pendingCharges',
+            'cancelledCharges',
+            'expenses',
+            'expensesTotal',
+            'cancelledCharges',
+            'sponsors',
+            'sponsorTotal'
         ));
     }
 
